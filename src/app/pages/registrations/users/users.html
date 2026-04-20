@@ -1,13 +1,170 @@
 <app-page-structure>
-  <div class="min-h-screen flex flex-col items-center px-4 py-12">
-    <div class="w-full max-w-[960px]">
+  <div class="min-h-screen px-4 py-12">
+    <div class="mx-auto flex w-full max-w-[960px] flex-col gap-6">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <h1 class="text-default mb-2 inline-flex items-center text-4xl font-black">
+            Usuários
+          </h1>
+        </div>
 
-      <h1 class="inline-flex items-center text-default text-4xl font-black mb-4 text-foreground">
-        Usuários
-      </h1>
+        <div class="flex items-center gap-2">
+          <button
+            mat-icon-button
+            matTooltip="Atualizar"
+            type="button"
+            (click)="loadUsers()"
+          >
+            <mat-icon>refresh</mat-icon>
+          </button>
 
-      <p>users works!</p>
+          <button
+            mat-icon-button
+            matTooltip="Adicionar"
+            type="button"
+            (click)="openCreateDialog()"
+          >
+            <mat-icon>add</mat-icon>
+          </button>
+        </div>
+      </div>
 
+      <div
+        [class.bg-neutral-900]="themeService.darkMode()"
+        [class.bg-white]="!themeService.darkMode()"
+      >
+        <div class="p-4">
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Buscar usuário</mat-label>
+
+            <input
+              matInput
+              [value]="search()"
+              (input)="applyFilter($event)"
+              placeholder="Nome, e-mail, perfil..."
+            />
+
+            @if (search()) {
+              <button
+                mat-icon-button
+                matSuffix
+                type="button"
+                aria-label="Limpar busca"
+                (click)="clearFilter()"
+                class="mr-2"
+              >
+                <mat-icon>close</mat-icon>
+              </button>
+            } @else {
+              <mat-icon matSuffix class="mr-1">search</mat-icon>
+            }
+          </mat-form-field>
+        </div>
+
+        @if (loading()) {
+          <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        }
+
+        <div class="overflow-x-auto">
+          <table
+            mat-table
+            [dataSource]="dataSource"
+            matSort
+            matSortDisableClear
+            [matSortActive]="sortBy() ?? 'id'"
+            [matSortDirection]="sortDirection() || 'desc'"
+            class="striped-table w-full"
+          >
+            <ng-container matColumnDef="id">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-default">ID</th>
+              <td mat-cell *matCellDef="let row" class="text-default">{{ row.id }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="name">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-default">Nome</th>
+              <td mat-cell *matCellDef="let row" class="text-default">{{ row.name }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="email">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-default">E-mail</th>
+              <td mat-cell *matCellDef="let row" class="text-default">{{ row.email }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="role">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-default">Perfil</th>
+              <td mat-cell *matCellDef="let row" class="text-default">{{ roleLabel(row.role) }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="isActive">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-default">Ativo</th>
+              <td mat-cell *matCellDef="let row" class="text-default">
+                {{ row.isActive ? 'Sim' : 'Não' }}
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="lastLogin">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-default">
+                Último acesso
+              </th>
+              <td mat-cell *matCellDef="let row" class="text-default">
+                {{ row.lastLogin || '—' }}
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef class="text-default text-right">Ações</th>
+              <td mat-cell *matCellDef="let row" class="text-right">
+                <button
+                  mat-icon-button
+                  [matMenuTriggerFor]="actionsMenu"
+                  aria-label="Abrir ações do usuário"
+                >
+                  <mat-icon>more_vert</mat-icon>
+                </button>
+
+                <mat-menu #actionsMenu="matMenu">
+                  <button mat-menu-item type="button" (click)="openEditDialog(row)">
+                    <mat-icon>edit</mat-icon>
+                    <span>Editar</span>
+                  </button>
+
+                  <button mat-menu-item type="button" (click)="openResetPasswordDialog(row)">
+                    <mat-icon>key</mat-icon>
+                    <span>Redefinir senha</span>
+                  </button>
+
+                  <button mat-menu-item type="button" (click)="openDeleteDialog(row)">
+                    <mat-icon>delete</mat-icon>
+                    <span>Remover</span>
+                  </button>
+                </mat-menu>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+
+            <tr class="mat-mdc-row" *matNoDataRow>
+              <td
+                class="mat-mdc-cell text-default p-4 text-center"
+                [attr.colspan]="displayedColumns.length"
+              >
+                Nenhum usuário encontrado.
+              </td>
+            </tr>
+          </table>
+        </div>
+
+        <mat-paginator
+          [length]="total()"
+          [pageIndex]="page() - 1"
+          [pageSize]="perPage()"
+          [pageSizeOptions]="[10, 25, 50, 100]"
+          (page)="onPageChange($event)"
+          showFirstLastButtons
+        >
+        </mat-paginator>
+      </div>
     </div>
   </div>
 </app-page-structure>

@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, computed, inject, signal, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, inject, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatPaginator, MatPaginatorModule, PageEvent } from '@angular/material/paginator';
@@ -56,7 +56,8 @@ export class Talks implements AfterViewInit {
     'kind',
     'shift',
     'subject',
-    'confirmed',
+    'approved',
+    // 'confirmed',
     // 'actions',
   ];
 
@@ -67,6 +68,7 @@ export class Talks implements AfterViewInit {
   public readonly loading = signal(false);
   public readonly exporting = signal(false);
   public readonly total = signal(0);
+  public readonly approved = signal(0);
   public readonly confirmed = signal(0);
 
   public readonly editionId = signal<number | null>(22);
@@ -79,10 +81,10 @@ export class Talks implements AfterViewInit {
 
   public expandedElement: Talk | null = null;
 
-  public readonly pending = computed(() => this.total() - this.confirmed());
-  public readonly confirmationRate = computed(() =>
-    this.total() > 0 ? Math.round((this.confirmed() / this.total()) * 100) : 0,
-  );
+  // public readonly pending = computed(() => this.total() - this.confirmed());
+  // public readonly confirmationRate = computed(() =>
+  //   this.total() > 0 ? Math.round((this.confirmed() / this.total()) * 100) : 0,
+  // );
 
   constructor() {
     this.loadTalks();
@@ -117,6 +119,7 @@ export class Talks implements AfterViewInit {
           this.dataSource.data = response.data;
           this.total.set(response.total);
           this.lastPage.set(response.last_page);
+          this.approved.set(response.data.filter((item) => item.approved).length);
           this.confirmed.set(response.data.filter((item) => item.confirmed).length);
           this.expandedElement = null;
 
@@ -159,6 +162,28 @@ export class Talks implements AfterViewInit {
 
   public toggle(element: Talk): void {
     this.expandedElement = this.isExpanded(element) ? null : element;
+  }
+
+  public toggleApproval(row: Talk): void {
+    this.talksService.approve(row.id, !row.approved).subscribe({
+      next: (updated) => {
+        const nextData = this.dataSource.data.map((item) =>
+          item.id === updated.id ? updated : item,
+        );
+
+        this.dataSource.data = nextData;
+        this.approved.set(nextData.filter((item) => item.approved).length);
+
+        this.snackBar.open('Aprovação atualizada.', 'Fechar', {
+          duration: 2500,
+        });
+      },
+      error: () => {
+        this.snackBar.open('Erro ao atualizar aprovação.', 'Fechar', {
+          duration: 3000,
+        });
+      },
+    });
   }
 
   public toggleConfirmation(row: Talk): void {
@@ -318,6 +343,10 @@ export class Talks implements AfterViewInit {
       description: 'Descrição',
       shift: 'Turno',
       kind: 'Tipo',
+      approved: 'Aprovado',
+      approved_at: 'Aprovado em',
+      confirmed: 'Confirmado',
+      confirmed_at: 'Confirmado em',
       talk_subject_id: 'Tema ID',
       talk_subject_name: 'Tema',
       slide_file: 'Slide (arquivo)',
@@ -340,6 +369,10 @@ export class Talks implements AfterViewInit {
         description: talk.description ?? '',
         shift: this.shiftLabel(talk.shift),
         kind: this.kindLabel(talk.kind),
+        approved: talk.approved ? 'Sim' : 'Não',
+        approved_at: talk.approved_at ?? '',
+        confirmed: talk.confirmed ? 'Sim' : 'Não',
+        confirmed_at: talk.confirmed_at ?? '',
         talk_subject_id: talk.talk_subject_id?.toString() ?? '',
         talk_subject_name: talk.talk_subject_name ?? '',
         slide_file: talk.slide_file_url ?? '',
@@ -428,6 +461,10 @@ interface ExportTalkRow {
   description: string;
   shift: string;
   kind: string;
+  approved: string;
+  approved_at: string;
+  confirmed: string;
+  confirmed_at: string;
   talk_subject_id: string;
   talk_subject_name: string;
   slide_file: string;

@@ -36,7 +36,7 @@ export const routes: Routes = [
     canActivate: [authGuard],
     canActivateChild: [authGuard],
     children: [
-      { path: 'dashboard', component: Dashboard },
+      // { path: 'dashboard', component: Dashboard },
       {
         path: 'registrations',
         children: [
@@ -51,7 +51,7 @@ export const routes: Routes = [
         ],
       },
       { path: 'check-in', component: CheckIn },
-      { path: 'profile', component: Profile },
+      // { path: 'profile', component: Profile },
     ],
   },
   {

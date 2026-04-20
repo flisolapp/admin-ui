@@ -58,7 +58,7 @@ export class Participants implements AfterViewInit {
     'email',
     'phone',
     'federalCode',
-    'confirmed',
+    // 'confirmed',
     // 'actions',
   ];
 

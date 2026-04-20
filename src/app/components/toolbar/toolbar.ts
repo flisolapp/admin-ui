@@ -5,7 +5,6 @@ import { MatTooltip } from '@angular/material/tooltip';
 import { MatIcon } from '@angular/material/icon';
 import { TranslatePipe } from '@ngx-translate/core';
 import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
-import { LanguageSelector } from '../language-selector/language-selector';
 import { ThemeSelector } from '../theme-selector/theme-selector';
 import { ThemeService } from '../../services/theme/theme-service';
 import { RouterLink } from '@angular/router';
@@ -24,7 +23,6 @@ import { MatDialog, MatDialogRef } from '@angular/material/dialog';
     MatMenuTrigger,
     MatMenu,
     MatMenuItem,
-    LanguageSelector,
     ThemeSelector,
     MatButton,
     RouterLink,

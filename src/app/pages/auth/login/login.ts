@@ -90,7 +90,7 @@ export class Login {
     const payload: LoginPayload = { email: email!, password: password! };
 
     this.auth.login({ email: email!, password: password! }).subscribe({
-      next: () => this.router.navigate(['/dashboard']),
+      next: () => this.router.navigate(['/registrations/talks']), // this.router.navigate(['/dashboard']),
       error: () => {
         this.loading.set(false);
         // this.errorMsg.set('E-mail ou senha inválidos. Verifique suas credenciais.');

@@ -1,0 +1,15 @@
+<h2 mat-dialog-title>Remover usuário</h2>
+
+<div mat-dialog-content class="pt-2">
+  <p>
+    Deseja remover o usuário <strong>{{ data.name }}</strong>?
+  </p>
+  <!--
+  <p class="text-sm opacity-80">Esta ação ocultará o usuário da listagem ativa.</p>
+  -->
+</div>
+
+<div mat-dialog-actions align="end">
+  <button mat-button type="button" (click)="close(false)">Cancelar</button>
+  <button mat-flat-button color="warn" type="button" (click)="close(true)">Remover</button>
+</div>

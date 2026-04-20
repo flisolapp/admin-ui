@@ -1,13 +1,421 @@
 <app-page-structure>
-  <div class="min-h-screen flex flex-col items-center px-4 py-12">
-    <div class="w-full max-w-[960px]">
+  <div class="min-h-screen px-4 py-12">
+    <div class="mx-auto flex w-full max-w-[960px] flex-col gap-6">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <h1 class="text-default mb-2 inline-flex items-center text-4xl font-black">
+            Colaboradores
+          </h1>
 
-      <h1 class="inline-flex items-center text-default text-4xl font-black mb-4 text-foreground">
-        Colaboradores
-      </h1>
+          <!--
+          <p class="text-default text-sm">
+            {{ total() }} colaboradores · {{ confirmed() }} confirmados
+          </p>
+          -->
+        </div>
 
-      <p>collaborators works!</p>
+        <!-- Toolbar -->
+        <div class="flex items-center gap-2">
+          <!-- Export -->
+          <!--
+          <button
+            mat-icon-button
+            matTooltip="Exportar"
+            type="button"
+            (click)="exportCollaborators()">
+            <mat-icon>download</mat-icon>
+          </button>
+          -->
+          <button
+            mat-icon-button
+            matTooltip="Exportar CSV"
+            type="button"
+            (click)="exportCollaborators()"
+            [disabled]="exporting() || loading()">
+            <mat-icon>download</mat-icon>
+          </button>
 
+          <!-- Refresh -->
+          <button
+            mat-icon-button
+            matTooltip="Atualizar"
+            type="button"
+            (click)="loadCollaborators()">
+            <mat-icon>refresh</mat-icon>
+          </button>
+
+          <!-- Add Collaborator -->
+          <!--
+          <button
+            mat-icon-button
+            color="primary"
+            matTooltip="Novo colaborador"
+            type="button"
+            (click)="createCollaborator()">
+            <mat-icon>person_add</mat-icon>
+          </button>
+          -->
+
+          <!-- Filter -->
+          <!--
+          <button
+            mat-icon-button
+            matTooltip="Filtros"
+            type="button"
+            (click)="openFilters()">
+            <mat-icon>filter_list</mat-icon>
+          </button>
+          -->
+
+          <!-- More Options -->
+          <!--
+          <button
+            mat-icon-button
+            [matMenuTriggerFor]="menu"
+            matTooltip="Mais opções"
+            type="button">
+            <mat-icon>more_vert</mat-icon>
+          </button>
+
+          <mat-menu #menu="matMenu">
+            <button mat-menu-item (click)="printCollaborators()">
+              <mat-icon>print</mat-icon>
+              <span>Imprimir</span>
+            </button>
+            <button mat-menu-item (click)="importCollaborators()">
+              <mat-icon>upload</mat-icon>
+              <span>Importar</span>
+            </button>
+          </mat-menu>
+          -->
+        </div>
+      </div>
+
+      <!--
+      <div class="flex flex-wrap gap-3">
+        <button mat-stroked-button type="button" (click)="loadCollaborators()">
+          <mat-icon>refresh</mat-icon>
+          Atualizar
+        </button>
+
+        <button mat-flat-button color="primary" type="button">
+          <mat-icon>person_add</mat-icon>
+          Novo colaborador
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div
+          class="border-outline rounded-2xl border p-4 shadow-sm"
+          [class.bg-neutral-900]="themeService.darkMode()"
+          [class.bg-white]="!themeService.darkMode()"
+        >
+          <span class="text-default block text-sm">Total</span>
+          <span class="text-default block text-2xl font-bold">{{ total() }}</span>
+        </div>
+
+        <div
+          class="border-outline rounded-2xl border p-4 shadow-sm"
+          [class.bg-neutral-900]="themeService.darkMode()"
+          [class.bg-white]="!themeService.darkMode()"
+        >
+          <span class="text-default block text-sm">Confirmados</span>
+          <span class="text-default block text-2xl font-bold">{{ confirmed() }}</span>
+        </div>
+
+        <div
+          class="border-outline rounded-2xl border p-4 shadow-sm"
+          [class.bg-neutral-900]="themeService.darkMode()"
+          [class.bg-white]="!themeService.darkMode()"
+        >
+          <span class="text-default block text-sm">Pendentes</span>
+          <span class="text-default block text-2xl font-bold">{{ pending() }}</span>
+        </div>
+
+        <div
+          class="border-outline rounded-2xl border p-4 shadow-sm"
+          [class.bg-neutral-900]="themeService.darkMode()"
+          [class.bg-white]="!themeService.darkMode()"
+        >
+          <span class="text-default block text-sm">Taxa</span>
+          <span class="text-default block text-2xl font-bold">
+            {{ confirmationRate() }}%
+          </span>
+        </div>
+      </div>
+      -->
+
+      <!-- border-outline rounded-2xl border shadow-sm -->
+      <div
+        class=""
+        [class.bg-neutral-900]="themeService.darkMode()"
+        [class.bg-white]="!themeService.darkMode()"
+      >
+        <div class="p-4">
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Buscar colaborador</mat-label>
+
+            <input
+              matInput
+              [value]="search()"
+              (input)="applyFilter($event)"
+              placeholder="Nome, e-mail, telefone, CPF, área ou turno..."
+            />
+
+            @if (search()) {
+              <button
+                mat-icon-button
+                matSuffix
+                type="button"
+                aria-label="Limpar busca"
+                (click)="clearFilter()"
+                class="mr-2"
+              >
+                <mat-icon>close</mat-icon>
+              </button>
+            } @else {
+              <mat-icon matSuffix class="mr-1">search</mat-icon>
+            }
+          </mat-form-field>
+        </div>
+
+        @if (exporting() || loading()) {
+          <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        }
+
+        <div class="overflow-x-auto">
+          <table
+            mat-table
+            [dataSource]="dataSource"
+            multiTemplateDataRows
+            matSort
+            matSortDisableClear
+            [matSortActive]="sortBy() ?? 'id'"
+            [matSortDirection]="sortDirection() || 'desc'"
+            class="striped-table w-full"
+          >
+            <!-- ID -->
+            <ng-container matColumnDef="id">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-default">
+                ID
+              </th>
+              <td mat-cell *matCellDef="let row" class="text-default">{{ row.id }}</td>
+            </ng-container>
+
+            <!-- Name -->
+            <ng-container matColumnDef="name">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-default">
+                Nome
+              </th>
+              <td mat-cell *matCellDef="let row" class="text-default max-w-[260px]">
+                <span class="block truncate" [title]="row.name">{{ row.name }}</span>
+              </td>
+            </ng-container>
+
+            <!-- Email -->
+            <ng-container matColumnDef="email">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-default">
+                E-mail
+              </th>
+              <td mat-cell *matCellDef="let row" class="text-default max-w-[260px]">
+                <span class="block truncate" [title]="row.email">{{ row.email }}</span>
+              </td>
+            </ng-container>
+
+            <!-- Phone -->
+            <!--
+            <ng-container matColumnDef="phone">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-default">
+                Telefone
+              </th>
+              <td mat-cell *matCellDef="let row" class="text-default whitespace-nowrap">
+                {{ row.phone || '—' }}
+              </td>
+            </ng-container>
+            -->
+
+            <!-- Federal Code -->
+            <!--
+            <ng-container matColumnDef="federal_code">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-default">
+                CPF
+              </th>
+              <td mat-cell *matCellDef="let row" class="text-default whitespace-nowrap">
+                {{ row.federal_code || '—' }}
+              </td>
+            </ng-container>
+            -->
+
+            <!-- Approved -->
+            <ng-container matColumnDef="approved">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-default">
+                Aprovado
+              </th>
+              <td mat-cell *matCellDef="let row">
+                <mat-slide-toggle
+                  [checked]="row.approved"
+                  (change)="toggleApproval(row)">
+                </mat-slide-toggle>
+              </td>
+            </ng-container>
+
+            <!-- Confirmed -->
+            <!--
+            <ng-container matColumnDef="confirmed">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-default">
+                Confirmado
+              </th>
+              <td mat-cell *matCellDef="let row">
+                <mat-slide-toggle
+                  [checked]="row.confirmed"
+                  (change)="toggleConfirmation(row)">
+                </mat-slide-toggle>
+              </td>
+            </ng-container>
+            -->
+
+            <!-- Actions -->
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef class="text-default">
+                Ações
+              </th>
+              <td mat-cell *matCellDef="let row" class="whitespace-nowrap">
+                <button mat-icon-button type="button" (click)="editCollaborator(row)">
+                  <mat-icon>edit</mat-icon>
+                </button>
+
+                <button mat-icon-button type="button" (click)="deleteCollaborator(row)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </td>
+            </ng-container>
+
+            <!-- Expand toggle -->
+            <ng-container matColumnDef="expand">
+              <th mat-header-cell *matHeaderCellDef aria-label="Expandir">&nbsp;</th>
+              <td mat-cell *matCellDef="let row">
+                <button
+                  mat-icon-button
+                  type="button"
+                  aria-label="Expandir detalhes do colaborador"
+                  class="expand-toggle"
+                  [class.expand-toggle--open]="isExpanded(row)"
+                  (click)="toggle(row); $event.stopPropagation()"
+                >
+                  <mat-icon>keyboard_arrow_down</mat-icon>
+                </button>
+              </td>
+            </ng-container>
+
+            <!-- Expanded detail spanning all columns -->
+            <ng-container matColumnDef="expandedDetail">
+              <td
+                mat-cell
+                *matCellDef="let row"
+                [attr.colspan]="columnsToDisplayWithExpand.length"
+                class="p-0"
+              >
+                <div
+                  class="collaborator-detail-wrapper"
+                  [class.collaborator-detail-wrapper--open]="isExpanded(row)"
+                >
+                  <div class="collaborator-detail">
+                    <div class="collaborator-card">
+                      <!-- Info -->
+                      <div class="collaborator-info">
+                        <p class="collaborator-name">{{ row.name }}</p>
+
+                        <div class="collaborator-meta">
+                          @if (row.email) {
+                            <span>{{ row.email }}</span>
+                          }
+                          @if (row.phone) {
+                            <span>{{ row.phone }}</span>
+                          }
+                          @if (row.federal_code) {
+                            <span>CPF: {{ row.federal_code }}</span>
+                          }
+                          <span>{{ row.confirmed ? 'Confirmado' : 'Pendente' }}</span>
+                        </div>
+
+                        <div class="detail-section">
+                          <p class="detail-title">Áreas</p>
+
+                          @if (row.areas.length === 0) {
+                            <p class="detail-empty">Nenhuma área cadastrada.</p>
+                          } @else {
+                            <div class="tag-list">
+                              @for (area of row.areas; track area.id) {
+                                <span class="detail-tag">{{ area.name }}</span>
+                              }
+                            </div>
+                          }
+                        </div>
+
+                        <div class="detail-section">
+                          <p class="detail-title">Turnos</p>
+
+                          @if (row.shifts.length === 0) {
+                            <p class="detail-empty">Nenhum turno cadastrado.</p>
+                          } @else {
+                            <div class="tag-list">
+                              @for (shift of row.shifts; track shift.id) {
+                                <span class="detail-tag">{{ shift.name }}</span>
+                              }
+                            </div>
+                          }
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="columnsToDisplayWithExpand"></tr>
+
+            <tr
+              mat-row
+              *matRowDef="let row; columns: columnsToDisplayWithExpand"
+              class="collaborator-row"
+              [class.collaborator-row--expanded]="isExpanded(row)"
+              (click)="toggle(row)"
+            ></tr>
+
+            <tr
+              mat-row
+              *matRowDef="let row; columns: ['expandedDetail']"
+              class="detail-row"
+            ></tr>
+
+            <tr class="mat-mdc-row" *matNoDataRow>
+              <td
+                class="mat-mdc-cell text-default p-4 text-center"
+                [attr.colspan]="columnsToDisplayWithExpand.length"
+              >
+                Nenhum colaborador encontrado.
+              </td>
+            </tr>
+          </table>
+        </div>
+
+        <mat-paginator
+          [length]="total()"
+          [pageIndex]="page() - 1"
+          [pageSize]="perPage()"
+          [pageSizeOptions]="[10, 25, 50, 100]"
+          (page)="onPageChange($event)"
+          showFirstLastButtons>
+        </mat-paginator>
+      </div>
+
+      @if (loading()) {
+        <!--
+        <div class="flex justify-center py-4">
+          <mat-spinner diameter="36"></mat-spinner>
+        </div>
+        -->
+      }
     </div>
   </div>
 </app-page-structure>

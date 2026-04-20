@@ -3,45 +3,31 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
-export interface TalkSpeaker {
+export interface CollaboratorOption {
   id: number;
   name: string;
-  federal_code: string | null;
-  email: string;
-  phone: string;
-  bio: string | null;
-  website: string | null;
-  photo_url: string | null;
 }
 
-export interface Talk {
+export interface Collaborator {
   id: number;
   edition_id: number;
-  title: string;
-  description: string | null;
-  shift: 'M' | 'A' | 'W';
-  kind: 'T' | 'W';
+  name: string;
+  email: string;
+  phone: string;
+  federal_code: string | null;
   approved: boolean;
   approved_at: string | null;
   confirmed: boolean;
   confirmed_at: string | null;
-  talk_subject_id: number | null;
-  talk_subject_name: string | null;
-  slide_file_url: string | null;
-  slide_url: string | null;
-  created_at: string;
-  updated_at: string;
-  removed_at: string | null;
-  speakers: TalkSpeaker[];
+  areas: CollaboratorOption[];
+  shifts: CollaboratorOption[];
 }
 
-export interface TalkFilters {
+export interface CollaboratorFilters {
   editionId?: number | null;
   page?: number;
   perPage?: number;
   search?: string;
-  shift?: 'M' | 'A' | 'W' | null;
-  kind?: 'T' | 'W' | null;
   approved?: boolean | null;
   confirmed?: boolean | null;
   sortBy?: string | null;
@@ -56,14 +42,19 @@ export interface PaginatedResponse<T> {
   total: number;
 }
 
+export interface CollaboratorMetadataResponse {
+  areas: CollaboratorOption[];
+  shifts: CollaboratorOption[];
+}
+
 @Injectable({
   providedIn: 'root',
 })
-export class TalksService {
+export class CollaboratorsService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = `${environment.apiUrl}/records/talks`;
+  private readonly baseUrl = `${environment.apiUrl}/records/collaborators`;
 
-  public getAll(filters: TalkFilters = {}): Observable<PaginatedResponse<Talk>> {
+  public getAll(filters: CollaboratorFilters = {}): Observable<PaginatedResponse<Collaborator>> {
     let params = new HttpParams();
 
     if (filters.editionId != null) {
@@ -84,14 +75,6 @@ export class TalksService {
       params = params.set('search', filters.search.trim());
     }
 
-    if (filters.kind != null) {
-      params = params.set('kind', filters.kind);
-    }
-
-    if (filters.shift != null) {
-      params = params.set('shift', filters.shift);
-    }
-
     if (filters.approved != null) {
       params = params.set('approved', filters.approved);
     }
@@ -108,19 +91,23 @@ export class TalksService {
       params = params.set('sort_direction', filters.sortDirection);
     }
 
-    return this.http.get<PaginatedResponse<Talk>>(this.baseUrl, { params });
+    return this.http.get<PaginatedResponse<Collaborator>>(this.baseUrl, { params });
   }
 
-  public getById(id: number): Observable<Talk> {
-    return this.http.get<Talk>(`${this.baseUrl}/${id}`);
+  public getById(id: number): Observable<Collaborator> {
+    return this.http.get<Collaborator>(`${this.baseUrl}/${id}`);
   }
 
-  public approve(id: number, approved: boolean): Observable<Talk> {
-    return this.http.patch<Talk>(`${this.baseUrl}/${id}/approve`, { approved });
+  public getMetadata(): Observable<CollaboratorMetadataResponse> {
+    return this.http.get<CollaboratorMetadataResponse>(`${this.baseUrl}/metadata`);
   }
 
-  public confirm(id: number, confirmed: boolean): Observable<Talk> {
-    return this.http.patch<Talk>(`${this.baseUrl}/${id}/confirm`, { confirmed });
+  public approve(id: number, approved: boolean): Observable<Collaborator> {
+    return this.http.patch<Collaborator>(`${this.baseUrl}/${id}/approve`, { approved });
+  }
+
+  public confirm(id: number, confirmed: boolean): Observable<Collaborator> {
+    return this.http.patch<Collaborator>(`${this.baseUrl}/${id}/confirm`, { confirmed });
   }
 
   public delete(id: number): Observable<void> {

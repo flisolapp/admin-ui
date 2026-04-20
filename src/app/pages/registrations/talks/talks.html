@@ -243,7 +243,21 @@
               </td>
             </ng-container>
 
+            <!-- Approved -->
+            <ng-container matColumnDef="approved">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-default">
+                Aprovado
+              </th>
+              <td mat-cell *matCellDef="let row">
+                <mat-slide-toggle
+                  [checked]="row.approved"
+                  (change)="toggleApproval(row)">
+                </mat-slide-toggle>
+              </td>
+            </ng-container>
+
             <!-- Confirmed -->
+            <!--
             <ng-container matColumnDef="confirmed">
               <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-default">
                 Confirmado
@@ -255,6 +269,7 @@
                 </mat-slide-toggle>
               </td>
             </ng-container>
+            -->
 
             <!-- Actions -->
             <ng-container matColumnDef="actions">

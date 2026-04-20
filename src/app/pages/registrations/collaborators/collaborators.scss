@@ -1,0 +1,115 @@
+/* ─── Expandable row animation ───────────────────────────────────────────── */
+
+.detail-row {
+  height: 0;
+}
+
+.collaborator-row {
+  cursor: pointer;
+
+  td {
+    border-bottom-width: 0;
+  }
+}
+
+.collaborator-row--expanded {
+  // keep the bottom border only on the last td so the detail attaches cleanly
+  td {
+    border-bottom: none;
+  }
+}
+
+/* CSS-grid collapse/expand trick — no JS height measurement needed */
+.collaborator-detail-wrapper {
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: 0fr;
+  grid-template-columns: 100%;
+  transition: grid-template-rows 225ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.collaborator-detail-wrapper--open {
+  grid-template-rows: 1fr;
+}
+
+.collaborator-detail {
+  min-height: 0; // required for the grid trick to work
+  padding: 0 16px;
+}
+
+/* ─── Expand button rotation ─────────────────────────────────────────────── */
+
+.expand-toggle {
+  transition: transform 225ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.expand-toggle--open {
+  transform: rotate(180deg);
+}
+
+/* ─── Collaborator cards inside the detail panel ────────────────────────── */
+
+.collaborator-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px 8px;
+}
+
+.collaborator-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.collaborator-name {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.collaborator-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  font-size: 0.8125rem;
+  opacity: 0.7;
+}
+
+.detail-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.detail-title {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  opacity: 0.9;
+}
+
+.detail-empty {
+  margin: 0;
+  font-size: 0.8125rem;
+  opacity: 0.65;
+}
+
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.detail-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  line-height: 1;
+  background: rgba(128, 128, 128, 0.14);
+  border: 1px solid rgba(128, 128, 128, 0.18);
+}
