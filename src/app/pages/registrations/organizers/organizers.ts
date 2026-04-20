@@ -17,6 +17,10 @@ import { Organizer, OrganizersService } from '../../../services/organizers/organ
 import { ThemeService } from '../../../services/theme/theme-service';
 import { MatTooltip } from '@angular/material/tooltip';
 import { MatProgressBar } from '@angular/material/progress-bar';
+import { MatDialog } from '@angular/material/dialog';
+import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
+import { OrganizerFormDialog } from './organizer-form-dialog/organizer-form-dialog';
+import { OrganizerDeleteDialog } from './organizer-delete-dialog/organizer-delete-dialog';
 
 @Component({
   selector: 'app-organizers',
@@ -35,6 +39,9 @@ import { MatProgressBar } from '@angular/material/progress-bar';
     MatProgressSpinnerModule,
     MatTooltip,
     MatProgressBar,
+    MatMenuTrigger,
+    MatMenu,
+    MatMenuItem,
   ],
   templateUrl: './organizers.html',
   styleUrl: './organizers.scss',
@@ -42,6 +49,7 @@ import { MatProgressBar } from '@angular/material/progress-bar';
 export class Organizers implements AfterViewInit {
   private readonly organizersService = inject(OrganizersService);
   private readonly snackBar = inject(MatSnackBar);
+  private readonly dialog = inject(MatDialog);
 
   public readonly themeService = inject(ThemeService);
 
@@ -55,6 +63,7 @@ export class Organizers implements AfterViewInit {
     'phone',
     'federalCode',
     // 'confirmed',
+    'actions',
   ];
 
   public readonly dataSource = new MatTableDataSource<Organizer>([]);
@@ -110,7 +119,7 @@ export class Organizers implements AfterViewInit {
           this.dataSource.data = response.data;
           this.total.set(response.total);
           this.lastPage.set(response.last_page);
-          this.confirmed.set(response.data.filter((item) => item.confirmed).length);
+          // this.confirmed.set(response.data.filter((item) => item.confirmed).length);
 
           if (this.paginator) {
             this.paginator.length = response.total;
@@ -145,48 +154,94 @@ export class Organizers implements AfterViewInit {
     this.loadOrganizers();
   }
 
-  public toggleConfirmation(row: Organizer): void {
-    this.organizersService.confirm(row.id, !row.confirmed).subscribe({
-      next: (updated) => {
-        const nextData = this.dataSource.data.map((item) =>
-          item.id === updated.id ? updated : item,
-        );
+  // public toggleConfirmation(row: Organizer): void {
+  //   this.organizersService.confirm(row.id, !row.confirmed).subscribe({
+  //     next: (updated) => {
+  //       const nextData = this.dataSource.data.map((item) =>
+  //         item.id === updated.id ? updated : item,
+  //       );
+  //
+  //       this.dataSource.data = nextData;
+  //       this.confirmed.set(nextData.filter((item) => item.confirmed).length);
+  //
+  //       this.snackBar.open('Confirmação atualizada.', 'Fechar', {
+  //         duration: 2500,
+  //       });
+  //     },
+  //     error: () => {
+  //       this.snackBar.open('Erro ao atualizar confirmação.', 'Fechar', {
+  //         duration: 3000,
+  //       });
+  //     },
+  //   });
+  // }
 
-        this.dataSource.data = nextData;
-        this.confirmed.set(nextData.filter((item) => item.confirmed).length);
-
-        this.snackBar.open('Confirmação atualizada.', 'Fechar', {
-          duration: 2500,
-        });
-      },
-      error: () => {
-        this.snackBar.open('Erro ao atualizar confirmação.', 'Fechar', {
-          duration: 3000,
-        });
-      },
+  public openCreateDialog(): void {
+    const dialogRef = this.dialog.open(OrganizerFormDialog, {
+      width: '560px',
+      data: { mode: 'create' },
     });
-  }
 
-  public deleteOrganizer(row: Organizer): void {
-    this.organizersService.delete(row.id).subscribe({
-      next: () => {
-        this.snackBar.open('Organizador removido.', 'Fechar', {
-          duration: 2500,
-        });
+    dialogRef.afterClosed().subscribe((payload) => {
+      if (!payload) return;
 
-        if (this.dataSource.data.length === 1 && this.page() > 1) {
-          this.page.set(this.page() - 1);
-        }
-
+      this.organizersService.create(payload).subscribe(() => {
         this.loadOrganizers();
-      },
-      error: () => {
-        this.snackBar.open('Erro ao remover organizador.', 'Fechar', {
-          duration: 3000,
-        });
-      },
+      });
     });
   }
+
+  public openEditDialog(row: any): void {
+    const dialogRef = this.dialog.open(OrganizerFormDialog, {
+      width: '560px',
+      data: { mode: 'edit', organizer: row },
+    });
+
+    dialogRef.afterClosed().subscribe((payload) => {
+      if (!payload) return;
+
+      this.organizersService.update(row.id, payload).subscribe(() => {
+        this.loadOrganizers();
+      });
+    });
+  }
+
+  public openDeleteDialog(row: any): void {
+    const dialogRef = this.dialog.open(OrganizerDeleteDialog, {
+      width: '420px',
+      maxWidth: '95vw',
+      data: row,
+    });
+
+    dialogRef.afterClosed().subscribe((confirmed) => {
+      if (!confirmed) return;
+
+      this.organizersService.delete(row.id).subscribe(() => {
+        this.loadOrganizers();
+      });
+    });
+  }
+
+  // public deleteOrganizer(row: Organizer): void {
+  //   this.organizersService.delete(row.id).subscribe({
+  //     next: () => {
+  //       this.snackBar.open('Organizador removido.', 'Fechar', {
+  //         duration: 2500,
+  //       });
+  //
+  //       if (this.dataSource.data.length === 1 && this.page() > 1) {
+  //         this.page.set(this.page() - 1);
+  //       }
+  //
+  //       this.loadOrganizers();
+  //     },
+  //     error: () => {
+  //       this.snackBar.open('Erro ao remover organizador.', 'Fechar', {
+  //         duration: 3000,
+  //       });
+  //     },
+  //   });
+  // }
 
   public exportOrganizers(): void {
     this.exporting.set(true);
@@ -257,7 +312,7 @@ export class Organizers implements AfterViewInit {
       email: 'E-mail',
       phone: 'Telefone',
       federalCode: 'CPF',
-      confirmed: 'Confirmado',
+      // confirmed: 'Confirmado',
     };
 
     const exportRows: ExportOrganizerRow[] = rows.map((organizer) => ({
@@ -266,7 +321,7 @@ export class Organizers implements AfterViewInit {
       email: organizer.email ?? '',
       phone: organizer.phone ?? '',
       federalCode: organizer.federalCode ?? '',
-      confirmed: organizer.confirmed ? 'Sim' : 'Não',
+      // confirmed: organizer.confirmed ? 'Sim' : 'Não',
     }));
 
     const csvLines: string[] = [];
@@ -334,5 +389,5 @@ interface ExportOrganizerRow {
   email: string;
   phone: string;
   federalCode: string;
-  confirmed: string;
+  // confirmed: string;
 }

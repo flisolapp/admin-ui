@@ -1,0 +1,43 @@
+<h2 mat-dialog-title>
+  {{ data.mode === 'create' ? 'Adicionar organizador' : 'Editar organizador' }}
+</h2>
+
+<div mat-dialog-content>
+  <form [formGroup]="form" class="flex flex-col gap-4 pt-2">
+    <mat-form-field appearance="outline">
+      <mat-label>Nome</mat-label>
+      <input matInput formControlName="name" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>E-mail</mat-label>
+      <input matInput type="email" formControlName="email" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Telefone</mat-label>
+      <input matInput formControlName="phone" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>CPF</mat-label>
+      <input matInput formControlName="federal_code" />
+    </mat-form-field>
+
+    <!--
+    @if (data.mode === 'create') {
+      <mat-form-field appearance="outline">
+        <mat-label>ID da edição</mat-label>
+        <input matInput type="number" formControlName="edition_id" />
+      </mat-form-field>
+    }
+    -->
+  </form>
+</div>
+
+<div mat-dialog-actions align="end">
+  <button mat-button type="button" (click)="close()">Cancelar</button>
+  <button mat-flat-button color="primary" type="button" (click)="submit()" [disabled]="form.invalid">
+    {{ data.mode === 'create' ? 'Criar' : 'Salvar' }}
+  </button>
+</div>

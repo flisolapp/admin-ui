@@ -9,8 +9,10 @@ export interface Organizer {
   email: string;
   phone: string;
   federalCode: string | null;
-  confirmed: boolean;
   editionId: number;
+  presentedAt: string | null;
+  createdAt: string | null;
+  updatedAt: string | null;
 }
 
 export interface OrganizerFilters {
@@ -18,9 +20,8 @@ export interface OrganizerFilters {
   page?: number;
   perPage?: number;
   search?: string;
-  confirmed?: boolean | null;
   sortBy?: string | null;
-  sortDirection?: 'asc' | 'desc' | '' | null;
+  sortDirection?: 'asc' | 'desc' | '';
 }
 
 export interface PaginatedResponse<T> {
@@ -31,9 +32,24 @@ export interface PaginatedResponse<T> {
   total: number;
 }
 
-@Injectable({
-  providedIn: 'root',
-})
+export interface CreateOrganizerPayload {
+  name: string;
+  email: string;
+  phone: string;
+  federal_code?: string | null;
+  edition_id: number;
+}
+
+export interface UpdateOrganizerPayload {
+  name?: string;
+  email?: string;
+  phone?: string;
+  federal_code?: string | null;
+  edition_id?: number;
+  presented_at?: string | null;
+}
+
+@Injectable({ providedIn: 'root' })
 export class OrganizersService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = `${environment.apiUrl}/records/organizers`;
@@ -43,8 +59,6 @@ export class OrganizersService {
 
     if (filters.editionId != null) {
       params = params.set('edition_id', filters.editionId);
-    } else {
-      params = params.set('edition_id', 22);
     }
 
     if (filters.page != null) {
@@ -55,16 +69,12 @@ export class OrganizersService {
       params = params.set('per_page', filters.perPage);
     }
 
-    if (filters.search?.trim()) {
-      params = params.set('search', filters.search.trim());
+    if (filters.search) {
+      params = params.set('search', filters.search);
     }
 
-    if (filters.confirmed != null) {
-      params = params.set('confirmed', filters.confirmed);
-    }
-
-    if (filters.sortBy?.trim()) {
-      params = params.set('sort_by', filters.sortBy.trim());
+    if (filters.sortBy) {
+      params = params.set('sort_by', filters.sortBy);
     }
 
     if (filters.sortDirection) {
@@ -74,14 +84,13 @@ export class OrganizersService {
     return this.http.get<PaginatedResponse<Organizer>>(this.baseUrl, { params });
   }
 
-  public getById(id: number): Observable<Organizer> {
-    return this.http.get<Organizer>(`${this.baseUrl}/${id}`);
+  public create(payload: CreateOrganizerPayload): Observable<Organizer> {
+    payload.edition_id = 22;
+    return this.http.post<Organizer>(this.baseUrl, payload);
   }
 
-  public confirm(id: number, confirmed: boolean): Observable<Organizer> {
-    return this.http.patch<Organizer>(`${this.baseUrl}/${id}/confirm`, {
-      confirmed,
-    });
+  public update(id: number, payload: UpdateOrganizerPayload): Observable<Organizer> {
+    return this.http.put<Organizer>(`${this.baseUrl}/${id}`, payload);
   }
 
   public delete(id: number): Observable<void> {
