@@ -1,0 +1,36 @@
+<app-page-structure>
+  <div class="min-h-[60vh] flex flex-col items-center justify-center px-4 py-16">
+    <div class="w-full max-w-[960px] flex flex-col items-center text-center">
+
+      <!-- ── Icon ──────────────────────────────────────────────────────────── -->
+      <div class="success-icon-ring mb-8">
+        <mat-icon class="success-icon">check_circle</mat-icon>
+      </div>
+
+      <!-- ── Copy ───────────────────────────────────────────────────────────── -->
+      <p class="text-default text-primary font-semibold tracking-widest uppercase text-sm mb-3">
+        {{ 'formSuccess.allGood' | translate }}
+      </p>
+
+      <h1 class="text-default text-4xl font-black mb-4">
+        {{ titleKey() | translate }}
+      </h1>
+
+      <p class="text-default text-on-surface-variant text-base mb-10 max-w-md">
+        {{ 'formSuccess.description' | translate }}
+      </p>
+
+      <!-- ── Action ─────────────────────────────────────────────────────────── -->
+      <button
+        mat-button
+        color="primary"
+        type="button"
+        (click)="onNewSubscription()"
+      >
+        <mat-icon>add</mat-icon>
+        {{ 'formSuccess.newSubscription' | translate }}
+      </button>
+
+    </div>
+  </div>
+</app-page-structure>

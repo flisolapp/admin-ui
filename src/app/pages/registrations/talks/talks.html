@@ -1,0 +1,433 @@
+<app-page-structure>
+  <div class="min-h-screen px-4 py-12">
+    <div class="mx-auto flex w-full max-w-[960px] flex-col gap-6">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <h1 class="text-default mb-2 inline-flex items-center text-4xl font-black">
+            Palestras
+          </h1>
+
+          <!--
+          <p class="text-default text-sm">
+            {{ total() }} palestras · {{ confirmed() }} confirmadas
+          </p>
+          -->
+        </div>
+
+        <!-- Toolbar -->
+        <div class="flex items-center gap-2">
+          <!-- Export -->
+          <!--
+          <button
+            mat-icon-button
+            matTooltip="Exportar"
+            type="button"
+            (click)="exportTalks()">
+            <mat-icon>download</mat-icon>
+          </button>
+          -->
+          <button
+            mat-icon-button
+            matTooltip="Exportar CSV"
+            type="button"
+            (click)="exportTalks()"
+            [disabled]="exporting() || loading()">
+            <mat-icon>download</mat-icon>
+          </button>
+
+          <!-- Refresh -->
+          <button
+            mat-icon-button
+            matTooltip="Atualizar"
+            type="button"
+            (click)="loadTalks()">
+            <mat-icon>refresh</mat-icon>
+          </button>
+
+          <!-- Add Talk -->
+          <!--
+          <button
+            mat-icon-button
+            color="primary"
+            matTooltip="Nova palestra"
+            type="button"
+            (click)="createTalk()">
+            <mat-icon>person_add</mat-icon>
+          </button>
+          -->
+
+          <!-- Filter -->
+          <!--
+          <button
+            mat-icon-button
+            matTooltip="Filtros"
+            type="button"
+            (click)="openFilters()">
+            <mat-icon>filter_list</mat-icon>
+          </button>
+          -->
+
+          <!-- More Options -->
+          <!--
+          <button
+            mat-icon-button
+            [matMenuTriggerFor]="menu"
+            matTooltip="Mais opções"
+            type="button">
+            <mat-icon>more_vert</mat-icon>
+          </button>
+
+          <mat-menu #menu="matMenu">
+            <button mat-menu-item (click)="printTalks()">
+              <mat-icon>print</mat-icon>
+              <span>Imprimir</span>
+            </button>
+            <button mat-menu-item (click)="importTalks()">
+              <mat-icon>upload</mat-icon>
+              <span>Importar</span>
+            </button>
+          </mat-menu>
+          -->
+        </div>
+      </div>
+
+      <!--
+      <div class="flex flex-wrap gap-3">
+        <button mat-stroked-button type="button" (click)="loadTalks()">
+          <mat-icon>refresh</mat-icon>
+          Atualizar
+        </button>
+
+        <button mat-flat-button color="primary" type="button">
+          <mat-icon>person_add</mat-icon>
+          Nova palestra
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div
+          class="border-outline rounded-2xl border p-4 shadow-sm"
+          [class.bg-neutral-900]="themeService.darkMode()"
+          [class.bg-white]="!themeService.darkMode()"
+        >
+          <span class="text-default block text-sm">Total</span>
+          <span class="text-default block text-2xl font-bold">{{ total() }}</span>
+        </div>
+
+        <div
+          class="border-outline rounded-2xl border p-4 shadow-sm"
+          [class.bg-neutral-900]="themeService.darkMode()"
+          [class.bg-white]="!themeService.darkMode()"
+        >
+          <span class="text-default block text-sm">Confirmadas</span>
+          <span class="text-default block text-2xl font-bold">{{ confirmed() }}</span>
+        </div>
+
+        <div
+          class="border-outline rounded-2xl border p-4 shadow-sm"
+          [class.bg-neutral-900]="themeService.darkMode()"
+          [class.bg-white]="!themeService.darkMode()"
+        >
+          <span class="text-default block text-sm">Pendentes</span>
+          <span class="text-default block text-2xl font-bold">{{ pending() }}</span>
+        </div>
+
+        <div
+          class="border-outline rounded-2xl border p-4 shadow-sm"
+          [class.bg-neutral-900]="themeService.darkMode()"
+          [class.bg-white]="!themeService.darkMode()"
+        >
+          <span class="text-default block text-sm">Taxa</span>
+          <span class="text-default block text-2xl font-bold">
+            {{ confirmationRate() }}%
+          </span>
+        </div>
+      </div>
+      -->
+
+      <!-- border-outline rounded-2xl border shadow-sm -->
+      <div
+        class=""
+        [class.bg-neutral-900]="themeService.darkMode()"
+        [class.bg-white]="!themeService.darkMode()"
+      >
+        <div class="p-4">
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Buscar palestra</mat-label>
+
+            <input
+              matInput
+              [value]="search()"
+              (input)="applyFilter($event)"
+              placeholder="Título, nome ou e-mail do palestrante, CPF..."
+            />
+
+            @if (search()) {
+              <button
+                mat-icon-button
+                matSuffix
+                type="button"
+                aria-label="Limpar busca"
+                (click)="clearFilter()"
+                class="mr-2"
+              >
+                <mat-icon>close</mat-icon>
+              </button>
+            } @else {
+              <mat-icon matSuffix class="mr-1">search</mat-icon>
+            }
+          </mat-form-field>
+        </div>
+
+        @if (exporting() || loading()) {
+          <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        }
+
+        <div class="overflow-x-auto">
+          <table
+            mat-table
+            [dataSource]="dataSource"
+            multiTemplateDataRows
+            matSort
+            matSortDisableClear
+            [matSortActive]="sortBy() ?? 'id'"
+            [matSortDirection]="sortDirection() || 'desc'"
+            class="striped-table w-full"
+          >
+
+            <!-- ID -->
+            <ng-container matColumnDef="id">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-default">
+                ID
+              </th>
+              <td mat-cell *matCellDef="let row" class="text-default">{{ row.id }}</td>
+            </ng-container>
+
+            <!-- Title -->
+            <ng-container matColumnDef="title">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-default">
+                Título
+              </th>
+              <td mat-cell *matCellDef="let row" class="text-default max-w-[260px]">
+                <span class="block truncate" [title]="row.title">{{ row.title }}</span>
+              </td>
+            </ng-container>
+
+            <!-- Kind -->
+            <ng-container matColumnDef="kind">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-default">
+                Tipo
+              </th>
+              <td mat-cell *matCellDef="let row" class="text-default whitespace-nowrap">
+                {{ kindLabel(row.kind) }}
+              </td>
+            </ng-container>
+
+            <!-- Shift -->
+            <ng-container matColumnDef="shift">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-default">
+                Turno
+              </th>
+              <td mat-cell *matCellDef="let row" class="text-default whitespace-nowrap">
+                {{ shiftLabel(row.shift) }}
+              </td>
+            </ng-container>
+
+            <!-- Subject -->
+            <ng-container matColumnDef="subject">
+              <th mat-header-cell *matHeaderCellDef class="text-default">
+                Tema
+              </th>
+              <td mat-cell *matCellDef="let row" class="text-default">
+                {{ row.talk_subject_name || '—' }}
+              </td>
+            </ng-container>
+
+            <!-- Confirmed -->
+            <ng-container matColumnDef="confirmed">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-default">
+                Confirmado
+              </th>
+              <td mat-cell *matCellDef="let row">
+                <mat-slide-toggle
+                  [checked]="row.confirmed"
+                  (change)="toggleConfirmation(row)">
+                </mat-slide-toggle>
+              </td>
+            </ng-container>
+
+            <!-- Actions -->
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef class="text-default">
+                Ações
+              </th>
+              <td mat-cell *matCellDef="let row" class="whitespace-nowrap">
+                <button mat-icon-button type="button" (click)="editTalk(row)">
+                  <mat-icon>edit</mat-icon>
+                </button>
+
+                <button mat-icon-button type="button" (click)="deleteTalk(row)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </td>
+            </ng-container>
+
+            <!-- Expand toggle -->
+            <ng-container matColumnDef="expand">
+              <th mat-header-cell *matHeaderCellDef aria-label="Expandir">&nbsp;</th>
+              <td mat-cell *matCellDef="let row">
+                <button
+                  mat-icon-button
+                  type="button"
+                  aria-label="Expandir palestrantes"
+                  class="expand-toggle"
+                  [class.expand-toggle--open]="isExpanded(row)"
+                  (click)="toggle(row); $event.stopPropagation()"
+                >
+                  <mat-icon>keyboard_arrow_down</mat-icon>
+                </button>
+              </td>
+            </ng-container>
+
+            <!-- Expanded detail spanning all columns -->
+            <ng-container matColumnDef="expandedDetail">
+              <td
+                mat-cell
+                *matCellDef="let row"
+                [attr.colspan]="columnsToDisplayWithExpand.length"
+                class="p-0"
+              >
+                <div
+                  class="speaker-detail-wrapper"
+                  [class.speaker-detail-wrapper--open]="isExpanded(row)"
+                >
+                  <div class="speaker-detail">
+                    @if (row.speakers.length === 0) {
+                      <p class="text-default px-6 py-4 text-sm opacity-60">
+                        Nenhum palestrante cadastrado.
+                      </p>
+                    }
+
+                    @for (speaker of row.speakers; track speaker.id) {
+                      <div class="speaker-card">
+                        <!-- Photo -->
+                        <div class="speaker-photo">
+                          @if (speaker.photo_url) {
+                            <div class="speaker-avatar">
+                              <img
+                                #speakerImg
+                                [src]="speaker.photo_url | authImage | async"
+                                [alt]="speaker.name"
+                                class="h-full w-full object-cover"
+                                loading="lazy"
+                              />
+                            </div>
+
+                            <div class="photo-actions">
+                              <button
+                                mat-icon-button
+                                type="button"
+                                class="photo-action-btn photo-action-btn--primary"
+                                (click)="downloadPhoto(speakerImg, row.id + '_' + speaker.id + '_' + speaker.name + '.png')"
+                                [title]="'Download photo'"
+                              >
+                                <mat-icon>download</mat-icon>
+                              </button>
+                            </div>
+                          } @else {
+                            <div class="speaker-avatar">
+                              <mat-icon class="opacity-40">person</mat-icon>
+                            </div>
+                          }
+                        </div>
+
+                        <!-- Info -->
+                        <div class="speaker-info">
+                          <p class="speaker-name">{{ speaker.name }}</p>
+
+                          <div class="speaker-meta">
+                            @if (speaker.email) {
+                              <span>{{ speaker.email }}</span>
+                            }
+                            @if (speaker.phone) {
+                              <span>{{ speaker.phone }}</span>
+                            }
+                            @if (speaker.federal_code) {
+                              <span>CPF: {{ speaker.federal_code }}</span>
+                            }
+                          </div>
+
+                          @if (speaker.bio) {
+                            <p class="speaker-bio">{{ speaker.bio }}</p>
+                          }
+
+                          @if (speaker.website) {
+                            <a
+                              [href]="speaker.website"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              class="speaker-website"
+                            >
+                              <mat-icon class="text-[14px] leading-none">open_in_new</mat-icon>
+                              {{ speaker.website }}
+                            </a>
+                          }
+                        </div>
+                      </div>
+
+                      @if (!$last) {
+                        <hr class="speaker-divider" />
+                      }
+                    }
+                  </div>
+                </div>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="columnsToDisplayWithExpand"></tr>
+
+            <tr
+              mat-row
+              *matRowDef="let row; columns: columnsToDisplayWithExpand"
+              class="talk-row"
+              [class.talk-row--expanded]="isExpanded(row)"
+              (click)="toggle(row)"
+            ></tr>
+
+            <tr
+              mat-row
+              *matRowDef="let row; columns: ['expandedDetail']"
+              class="detail-row"
+            ></tr>
+
+            <tr class="mat-mdc-row" *matNoDataRow>
+              <td
+                class="mat-mdc-cell text-default p-4 text-center"
+                [attr.colspan]="columnsToDisplayWithExpand.length"
+              >
+                Nenhuma palestra encontrada.
+              </td>
+            </tr>
+          </table>
+        </div>
+
+        <mat-paginator
+          [length]="total()"
+          [pageIndex]="page() - 1"
+          [pageSize]="perPage()"
+          [pageSizeOptions]="[10, 25, 50, 100]"
+          (page)="onPageChange($event)"
+          showFirstLastButtons>
+        </mat-paginator>
+      </div>
+
+      @if (loading()) {
+        <!--
+        <div class="flex justify-center py-4">
+          <mat-spinner diameter="36"></mat-spinner>
+        </div>
+        -->
+      }
+    </div>
+  </div>
+</app-page-structure>

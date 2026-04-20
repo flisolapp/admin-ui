@@ -1,0 +1,148 @@
+/* ─── Expandable row animation ───────────────────────────────────────────── */
+
+.detail-row {
+  height: 0;
+}
+
+.talk-row {
+  cursor: pointer;
+
+  td {
+    border-bottom-width: 0;
+  }
+}
+
+.talk-row--expanded {
+  // keep the bottom border only on the last td so the detail attaches cleanly
+  td {
+    border-bottom: none;
+  }
+}
+
+/* CSS-grid collapse/expand trick — no JS height measurement needed */
+.speaker-detail-wrapper {
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: 0fr;
+  grid-template-columns: 100%;
+  transition: grid-template-rows 225ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.speaker-detail-wrapper--open {
+  grid-template-rows: 1fr;
+}
+
+.speaker-detail {
+  min-height: 0; // required for the grid trick to work
+  padding: 0 16px;
+}
+
+/* ─── Expand button rotation ─────────────────────────────────────────────── */
+
+.expand-toggle {
+  transition: transform 225ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.expand-toggle--open {
+  transform: rotate(180deg);
+}
+
+/* ─── Speaker cards inside the detail panel ──────────────────────────────── */
+
+.speaker-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px 8px;
+}
+
+.speaker-photo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.375rem;
+  flex-shrink: 0;
+}
+
+.speaker-avatar {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: rgba(128, 128, 128, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.photo-actions {
+  display: flex;
+  gap: 2.5rem;
+  margin-top: 0.25rem;
+
+  .photo-action-btn {
+    &--primary {
+      color: var(--mat-sys-primary);
+    }
+
+    &--warn {
+      color: var(--mat-sys-error, red);
+    }
+  }
+}
+
+.speaker-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.speaker-name {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.speaker-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  font-size: 0.8125rem;
+  opacity: 0.7;
+}
+
+.speaker-bio {
+  font-size: 0.8125rem;
+  opacity: 0.8;
+  margin: 4px 0 0;
+  white-space: pre-line;
+}
+
+.speaker-website {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.8125rem;
+  text-decoration: none;
+  color: var(--mat-sys-primary);
+  margin-top: 4px;
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  // keep long URLs from blowing the layout
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.speaker-divider {
+  border: none;
+  border-top: 1px solid rgba(128, 128, 128, 0.15);
+  margin: 0 8px;
+}

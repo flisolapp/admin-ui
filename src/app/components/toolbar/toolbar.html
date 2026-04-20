@@ -1,0 +1,184 @@
+<div class="toolbar" role="banner">
+
+  <a [routerLink]="['/dashboard']" class="h-10 object-contain mr-2">
+    @if (themeService.darkMode()) {
+      <img ngSrc="assets/images/logo-slim-white.svg" class="logo" alt="FLISoL" height="40" width="89"
+           [priority]="true" />
+    } @else {
+      <img ngSrc="assets/images/logo-slim.svg" class="logo" alt="FLISoL" height="40" width="89" [priority]="true" />
+    }
+  </a>
+
+  <span
+    class="text-xs tracking-wide mr-2 cursor-default"
+    [class.text-white]="themeService.darkMode()"
+    [class.text-muted-foreground]="!themeService.darkMode()"
+  >
+    <span class="sm:hidden">2026</span>
+    <span class="hidden sm:inline">{{ 'header.edition' | translate }} 2026</span>
+  </span>
+
+  <div
+    class="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border-0 cursor-default"
+    [class.text-white]="themeService.darkMode()"
+    [class.text-muted-foreground]="!themeService.darkMode()">
+    <mat-icon
+      class="!text-[14px] !w-[14px] !h-[14px]"
+      fontSet="outlined">location_on
+    </mat-icon>
+    Brasília/DF
+  </div>
+
+  <!--
+  <button mat-button onclick="javascript:void(0)"
+          matTooltip="Brasília é uma Cidade Maravilhosa/DF"
+          [matTooltipPosition]="'below'">
+    <! - - {edition.label} - - >
+    <span class="edition-location">
+      <mat-icon
+        fontIcon="location_on"
+        class="!text-[14px] !w-[14px] !h-[14px]"
+      ></mat-icon>
+      <span class="edition-location__label">Brasília é uma Cidade Maravilhosa/DF</span>
+    </span>
+  </button>
+  -->
+
+  <!--
+  <button matButton [matMenuTriggerFor]="registrations">Cadastro</button>
+  <mat-menu #registrations="matMenu">
+    <button mat-menu-item>Edições</button>
+    <button mat-menu-item>Palestras</button>
+    <button mat-menu-item>Cronogramas</button>
+    <button mat-menu-item>Participantes</button>
+    <button mat-menu-item>Colaboradores</button>
+    <button mat-menu-item>Organizadores</button>
+    <button mat-menu-item>Usuários</button>
+  </mat-menu>
+
+  <button matButton>Credenciamento</button>
+
+  <div class="spacer"></div>
+
+  <button matIconButton  [matMenuTriggerFor]="personal">
+    <mat-icon>person</mat-icon>
+  </button>
+  <mat-menu #personal="matMenu">
+    <button mat-menu-item>Perfil</button>
+    <button mat-menu-item>Sair</button>
+  </mat-menu>
+
+  <app-theme-selector></app-theme-selector>
+
+  <app-language-selector></app-language-selector>
+  -->
+
+  <div class="spacer flex-1"></div>
+
+  <!-- Desktop actions -->
+  <div class="hidden md:flex items-center gap-1">
+    <!--
+    <button mat-button [routerLink]="['/dashboard']">Dashboard</button>
+    -->
+
+    <button mat-button [matMenuTriggerFor]="registrationsMenu">Cadastro</button>
+    <!--
+    <mat-menu #registrationsMenu="matMenu">
+      <button mat-menu-item [routerLink]="['/registrations/editions']">Edições</button>
+      <button mat-menu-item [routerLink]="['/registrations/talks']">Palestras</button>
+      <button mat-menu-item [routerLink]="['/registrations/schedules']">Cronogramas</button>
+      <button mat-menu-item [routerLink]="['/registrations/participants']">Participantes</button>
+      <button mat-menu-item [routerLink]="['/registrations/collaborators']">Colaboradores</button>
+      <button mat-menu-item [routerLink]="['/registrations/organizers']">Organizadores</button>
+      <button mat-menu-item [routerLink]="['/registrations/users']">Usuários</button>
+    </mat-menu>
+    -->
+    <mat-menu #registrationsMenu="matMenu">
+      @for (item of registrationItems; track item.route) {
+        <button mat-menu-item [routerLink]="[item.route]">
+          {{ item.label }}
+        </button>
+      }
+    </mat-menu>
+
+    <!--
+    <button mat-button [routerLink]="['/check-in']">Credenciamento</button>
+
+    <button mat-icon-button [routerLink]="['/profile']" [matTooltip]="'Perfil'"
+            [matTooltipPosition]="'below'">
+      <mat-icon>person</mat-icon>
+    </button>
+    -->
+
+    <app-theme-selector></app-theme-selector>
+    <app-language-selector></app-language-selector>
+
+    <button mat-icon-button (click)="logout()" [matTooltip]="'Sair'"
+            [matTooltipPosition]="'below'">
+      <mat-icon>logout</mat-icon>
+    </button>
+  </div>
+
+  <!-- Mobile actions -->
+  <div class="flex md:hidden items-center gap-1">
+    <app-theme-selector></app-theme-selector>
+
+    <button mat-icon-button [matMenuTriggerFor]="mobileMenu" aria-label="Open menu">
+      <mat-icon>more_vert</mat-icon>
+    </button>
+
+    <mat-menu #mobileMenu="matMenu">
+      <!--
+      <button mat-menu-item [routerLink]="['/dashboard']">
+        <mat-icon>dashboard</mat-icon>
+        <span>Dashboard</span>
+      </button>
+      -->
+
+      <button mat-menu-item [matMenuTriggerFor]="mobileRegistrationsMenu">
+        <mat-icon>folder_open</mat-icon>
+        <span>Cadastro</span>
+      </button>
+
+      <button mat-menu-item [routerLink]="['/check-in']">
+        <mat-icon>how_to_reg</mat-icon>
+        <span>Credenciamento</span>
+      </button>
+
+      <button mat-menu-item [routerLink]="['/profile']">
+        <mat-icon>person</mat-icon>
+        <span>Perfil</span>
+      </button>
+
+      <!--
+      <button mat-menu-item>
+        <app-language-selector></app-language-selector>
+      </button>
+      -->
+      <app-language-selector></app-language-selector>
+
+      <button mat-menu-item (click)="logout()">
+        <mat-icon>logout</mat-icon>
+        <span>Sair</span>
+      </button>
+    </mat-menu>
+
+    <mat-menu #mobileRegistrationsMenu="matMenu">
+      <!--
+      <button mat-menu-item [routerLink]="['/registrations/editions']">Edições</button>
+      <button mat-menu-item [routerLink]="['/registrations/talks']">Palestras</button>
+      <button mat-menu-item [routerLink]="['/registrations/schedules']">Cronogramas</button>
+      <button mat-menu-item [routerLink]="['/registrations/participants']">Participantes</button>
+      <button mat-menu-item [routerLink]="['/registrations/collaborators']">Colaboradores</button>
+      <button mat-menu-item [routerLink]="['/registrations/organizers']">Organizadores</button>
+      <button mat-menu-item [routerLink]="['/registrations/users']">Usuários</button>
+      -->
+      @for (item of registrationItems; track item.route) {
+        <button mat-menu-item [routerLink]="[item.route]">
+          {{ item.label }}
+        </button>
+      }
+    </mat-menu>
+  </div>
+
+</div>

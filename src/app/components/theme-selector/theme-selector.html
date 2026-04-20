@@ -1,0 +1,11 @@
+<button mat-icon-button (click)="toggleColorScheme()"
+        matTooltip="{{ (themeService.darkMode() ? 'header.turnOnLightMode' : 'header.turnOnDarkMode') | translate }}"
+        [matTooltipPosition]="'below'">
+  <mat-icon fontSet="outlined">
+    @if (themeService.darkMode()) {
+      dark_mode
+    } @else {
+      light_mode
+    }
+  </mat-icon>
+</button>

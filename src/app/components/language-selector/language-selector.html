@@ -1,0 +1,41 @@
+<!-- Desktop -->
+<div class="hidden md:flex items-center gap-1">
+  <button mat-icon-button class="language-menu"
+          [matTooltip]="language()?.name"
+          [matTooltipPosition]="'below'"
+          [matMenuTriggerFor]="languageMenu"
+          xPosition="before">
+    @if (themeService.darkMode()) {
+      <img [ngSrc]="'assets/images/flags/' + (language()?.flag?.toLowerCase() || 'default') + '-white.svg'" alt=""
+           height="18" width="24" />
+    } @else {
+      <img [ngSrc]="'assets/images/flags/' + (language()?.flag?.toLowerCase() || 'default') + '.svg'" alt="" height="18"
+           width="24" />
+    }
+  </button>
+</div>
+
+<!-- Mobile -->
+<div class="flex md:hidden items-center gap-1">
+  <button mat-menu-item [matMenuTriggerFor]="languageMenu">
+    <mat-icon>translate</mat-icon>
+    <span>Idioma</span>
+  </button>
+</div>
+
+<mat-menu #languageMenu="matMenu">
+  @for (item of languageService.getLanguages(); track $index) {
+    <button mat-menu-item class="language-menu-item"
+            [disabled]="item.code === language()?.code"
+            (click)="selectLanguage(item)">
+      @if (themeService.darkMode()) {
+        <img [ngSrc]="'assets/images/flags/' + (item.flag?.toLowerCase() || 'default') + '-white.svg'" alt=""
+             height="18" width="24" />
+      } @else {
+        <img [ngSrc]="'assets/images/flags/' + (item.flag?.toLowerCase() || 'default') + '.svg'" alt="" height="18"
+             width="24" />
+      }
+      <span>{{ item.name }}</span>
+    </button>
+  }
+</mat-menu>

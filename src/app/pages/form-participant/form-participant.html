@@ -1,0 +1,189 @@
+<app-page-structure>
+  <div class="min-h-screen flex flex-col items-center px-4 py-12">
+    <div class="w-full max-w-[960px]">
+
+      <h1 class="inline-flex items-center text-default text-4xl font-black mb-4 text-foreground">
+        <button matIconButton (click)="onBack()" class="mr-2">
+          <mat-icon>arrow_back</mat-icon>
+        </button>
+        {{ 'formParticipant.title' | translate }}
+      </h1>
+      <p class="text-default text-muted-foreground mb-2 text-justify">
+        {{ 'formParticipant.description1' | translate }}
+      </p>
+      <p class="text-default text-muted-foreground mb-10 text-justify">
+        {{ 'formParticipant.description2' | translate }}
+      </p>
+
+      <form class="participant-form" [formGroup]="form" (ngSubmit)="onSubmit($event)" novalidate>
+
+        <!-- Nome -->
+        <mat-form-field class="participant-field">
+          <mat-label>{{ 'formParticipant.name' | translate }}</mat-label>
+          <input matInput formControlName="name" autocomplete="name" />
+          @if (hasError('name')) {
+            <mat-error>{{ getError('name') }}</mat-error>
+          }
+        </mat-form-field>
+
+        <!-- Federal Code -->
+        <mat-form-field class="participant-field">
+          <mat-label>{{ 'formParticipant.federalCode' | translate }}</mat-label>
+          <input
+            matInput
+            formControlName="federalCode"
+            placeholder="000.000.000-00"
+            inputmode="numeric"
+            autocomplete="off"
+            (input)="onFederalCodeInput($event)"
+          />
+          <mat-hint>{{ 'formParticipant.federalCodeHint' | translate }}</mat-hint>
+          @if (hasError('federalCode')) {
+            <mat-error>{{ getError('federalCode') }}</mat-error>
+          }
+        </mat-form-field>
+
+        <!-- E-mail -->
+        <mat-form-field class="participant-field">
+          <mat-label>{{ 'formParticipant.email' | translate }}</mat-label>
+          <input matInput type="email" formControlName="email" autocomplete="email" />
+          @if (hasError('email')) {
+            <mat-error>{{ getError('email') }}</mat-error>
+          }
+        </mat-form-field>
+
+        <!-- Telefone -->
+        <mat-form-field class="participant-field">
+          <mat-label>{{ 'formParticipant.phone' | translate }}</mat-label>
+          <input
+            matInput
+            formControlName="phone"
+            placeholder="(00) 00000-0000"
+            inputmode="tel"
+            autocomplete="tel"
+            (input)="onPhoneInput($event)"
+          />
+          @if (hasError('phone')) {
+            <mat-error>{{ getError('phone') }}</mat-error>
+          }
+        </mat-form-field>
+
+        <!-- Usa Software Livre? -->
+        <div class="radio-field">
+          <label class="radio-label text-default">
+            {{ 'formParticipant.usesFreeSoftware' | translate }}
+            <span class="radio-required" aria-hidden="true">*</span>
+          </label>
+          <mat-radio-group
+            formControlName="usesFreeSoftware"
+            class="radio-group"
+            [attr.aria-label]="'formParticipant.usesFreeSoftware' | translate"
+          >
+            <mat-radio-button value="yes">{{ 'common.yes' | translate }}</mat-radio-button>
+            <mat-radio-button value="no">{{ 'common.no' | translate }}</mat-radio-button>
+          </mat-radio-group>
+          @if (hasError('usesFreeSoftware')) {
+            <mat-error class="radio-error">{{ getError('usesFreeSoftware') }}</mat-error>
+          }
+        </div>
+
+        <!-- Qual distribuição GNU/Linux você usa? -->
+        <mat-form-field class="participant-field">
+          <mat-label>{{ 'formParticipant.distroLabel' | translate }}</mat-label>
+          <input
+            matInput
+            formControlName="distro"
+            [placeholder]="'formParticipant.distroSearch' | translate"
+            [matAutocomplete]="distroAuto"
+            autocomplete="off"
+          />
+          <mat-autocomplete #distroAuto="matAutocomplete" [displayWith]="displayLabel(distros)">
+            @for (option of filteredDistros$ | async; track option.value) {
+              <mat-option [value]="option.value" (onSelectionChange)="selectOption('distro', option)">
+                {{ option.label }}
+              </mat-option>
+            }
+          </mat-autocomplete>
+          @if (hasError('distro')) {
+            <mat-error>{{ getError('distro') }}</mat-error>
+          }
+        </mat-form-field>
+
+        <!-- Você é estudante? -->
+        <mat-form-field class="participant-field">
+          <mat-label>{{ 'formParticipant.isStudentLabel' | translate }}</mat-label>
+          <input
+            matInput
+            formControlName="isStudent"
+            [placeholder]="'formParticipant.isStudentSelect' | translate"
+            [matAutocomplete]="studentAuto"
+            autocomplete="off"
+          />
+          <mat-autocomplete #studentAuto="matAutocomplete" [displayWith]="displayLabel(studentOptions)">
+            @for (option of studentOptions; track option.value) {
+              <mat-option [value]="option.value" (onSelectionChange)="selectOption('isStudent', option)">
+                {{ option.label | translate }}
+              </mat-option>
+            }
+          </mat-autocomplete>
+          @if (hasError('isStudent')) {
+            <mat-error>{{ getError('isStudent') }}</mat-error>
+          }
+        </mat-form-field>
+
+        <!-- Onde você estuda ou trabalha? -->
+        <mat-form-field class="participant-field">
+          <mat-label>{{ 'formParticipant.institution' | translate }}</mat-label>
+          <input matInput formControlName="institution" autocomplete="organization" />
+          @if (hasError('institution')) {
+            <mat-error>{{ getError('institution') }}</mat-error>
+          }
+        </mat-form-field>
+
+        <!-- Qual curso faz ou é formado? -->
+        <mat-form-field class="participant-field">
+          <mat-label>{{ 'formParticipant.course' | translate }}</mat-label>
+          <input matInput formControlName="course" />
+          @if (hasError('course')) {
+            <mat-error>{{ getError('course') }}</mat-error>
+          }
+        </mat-form-field>
+
+        <!-- Em qual estado você reside? -->
+        <mat-form-field class="participant-field">
+          <mat-label>{{ 'formParticipant.stateLabel' | translate }}</mat-label>
+          <input
+            matInput
+            formControlName="state"
+            [placeholder]="'formParticipant.stateSearch' | translate"
+            [matAutocomplete]="stateAuto"
+            autocomplete="off"
+          />
+          <mat-autocomplete #stateAuto="matAutocomplete" [displayWith]="displayLabel(statesBr)">
+            @for (option of filteredStates$ | async; track option.value) {
+              <mat-option [value]="option.value" (onSelectionChange)="selectOption('state', option)">
+                <span class="state-uf">{{ option.value }}</span>
+                {{ option.label }}
+              </mat-option>
+            }
+          </mat-autocomplete>
+          @if (hasError('state')) {
+            <mat-error>{{ getError('state') }}</mat-error>
+          }
+        </mat-form-field>
+
+        <!-- Actions -->
+        <div class="form-actions">
+          <button mat-button type="button" (click)="onBack()">
+            <mat-icon>arrow_back</mat-icon>
+            {{ 'common.back' | translate }}
+          </button>
+          <button mat-flat-button color="primary" type="submit">
+            {{ 'common.reviewData' | translate }}
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</app-page-structure>

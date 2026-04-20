@@ -1,0 +1,168 @@
+<div [id]="'speaker-' + idx()" class="speaker-card scroll-mt-24" [formGroup]="group()">
+
+  @if (total() > 1) {
+    <div class="card-header">
+      <span class="card-title text-default">
+        {{ 'formSpeaker.speakerCard.title' | translate: { n: idx() + 1 } }}
+      </span>
+      <button
+        mat-icon-button
+        type="button"
+        class="card-remove-btn"
+        (click)="remove.emit()"
+        [attr.aria-label]="'formSpeaker.speakerCard.removeAriaLabel' | translate"
+      >
+        <mat-icon>delete</mat-icon>
+      </button>
+    </div>
+  }
+
+  <div class="card-body">
+
+    <!-- ── Photo upload ──────────────────────────────────────────────────── -->
+    <div class="photo-column">
+
+      <div
+        class="photo-upload"
+        [class.photo-upload--error]="hasPhotoError"
+        (click)="photoFileInput.click()"
+        role="button"
+        tabindex="0"
+        (keydown.enter)="photoFileInput.click()"
+        [attr.aria-label]="'formSpeaker.speakerCard.photoAriaLabel' | translate"
+      >
+        @if (photoPreviewUrl()) {
+          <img
+            [src]="photoPreviewUrl()!"
+            [alt]="'formSpeaker.speakerCard.photoAriaLabel' | translate"
+            class="photo-preview"
+          />
+          <div class="photo-overlay">
+            <mat-icon>photo_camera</mat-icon>
+          </div>
+        } @else {
+          <div class="photo-placeholder" [class.photo-placeholder--error]="hasPhotoError">
+            <mat-icon>photo_camera</mat-icon>
+            <span class="photo-hint-text">
+              {{ 'formSpeaker.speakerCard.photoHint' | translate }}
+              <span class="required" aria-hidden="true">*</span>
+            </span>
+          </div>
+        }
+      </div>
+
+      <input
+        #photoFileInput
+        type="file"
+        accept="image/png,image/jpeg,image/webp"
+        class="hidden-input"
+        (change)="onPhotoSelect($event)"
+      />
+
+      @if (photo()) {
+        <div class="photo-actions">
+          <button
+            mat-icon-button
+            type="button"
+            class="photo-action-btn photo-action-btn--primary"
+            (click)="downloadPhoto()"
+            [title]="'formSpeaker.speakerCard.photoDownload' | translate"
+          >
+            <mat-icon>download</mat-icon>
+          </button>
+          <button
+            mat-icon-button
+            type="button"
+            class="photo-action-btn photo-action-btn--warn"
+            (click)="onPhotoRemove($event)"
+            [title]="'formSpeaker.speakerCard.photoRemove' | translate"
+          >
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+      }
+
+      <!-- File size error (shown when the selected file exceeds 5 MB) -->
+      @if (photoSizeErrorKey()) {
+        <mat-error class="photo-error">
+          {{ photoSizeErrorKey()! | translate: { max: '5 MB', name: photoRejectedName() } }}
+        </mat-error>
+      } @else if (hasPhotoError) {
+        <mat-error class="photo-error">
+          {{ 'formSpeaker.speakerCard.photoError' | translate }}
+        </mat-error>
+      } @else if (!photo()) {
+        <span class="photo-hint-sub">
+          {{ 'formSpeaker.speakerCard.photoFormat' | translate }}
+        </span>
+      }
+
+    </div>
+
+    <!-- ── Fields ────────────────────────────────────────────────────────── -->
+    <div class="fields-column">
+
+      <mat-form-field class="speaker-field">
+        <mat-label>{{ 'formSpeaker.speakerCard.name' | translate }}</mat-label>
+        <input matInput formControlName="name" autocomplete="name" />
+        @if (hasError('name')) {
+          <mat-error>{{ getError('name') }}</mat-error>
+        }
+      </mat-form-field>
+
+      <!-- Federal Code -->
+      <mat-form-field class="speaker-field">
+        <mat-label>{{ 'formSpeaker.speakerCard.federalCode' | translate }}</mat-label>
+        <input
+          matInput
+          formControlName="federalCode"
+          placeholder="000.000.000-00"
+          inputmode="numeric"
+          autocomplete="off"
+          (input)="onFederalCodeInput($event)"
+        />
+        <mat-hint>{{ 'formSpeaker.speakerCard.federalCodeHint' | translate }}</mat-hint>
+        @if (hasError('federalCode')) {
+          <mat-error>{{ getError('federalCode') }}</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field class="speaker-field">
+        <mat-label>{{ 'formSpeaker.speakerCard.email' | translate }}</mat-label>
+        <input matInput type="email" formControlName="email" autocomplete="email" />
+        @if (hasError('email')) {
+          <mat-error>{{ getError('email') }}</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field class="speaker-field">
+        <mat-label>{{ 'formSpeaker.speakerCard.phone' | translate }}</mat-label>
+        <input
+          matInput
+          formControlName="phone"
+          placeholder="(00) 00000-0000"
+          inputmode="tel"
+          autocomplete="tel"
+          (input)="onPhoneInput($event)"
+        />
+        @if (hasError('phone')) {
+          <mat-error>{{ getError('phone') }}</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field class="speaker-field">
+        <mat-label>{{ 'formSpeaker.speakerCard.minicurriculo' | translate }}</mat-label>
+        <textarea matInput formControlName="minicurriculo" rows="3"></textarea>
+        @if (hasError('minicurriculo')) {
+          <mat-error>{{ getError('minicurriculo') }}</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field class="speaker-field">
+        <mat-label>{{ 'formSpeaker.speakerCard.site' | translate }}</mat-label>
+        <input matInput formControlName="site" autocomplete="url" />
+      </mat-form-field>
+
+    </div>
+  </div>
+</div>

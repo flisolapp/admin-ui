@@ -1,0 +1,59 @@
+<div class="flex min-h-screen bg-background">
+
+  <!-- Left side - hero (hidden on mobile) -->
+  <div class="hidden lg:flex lg:w-1/2 relative items-center justify-center overflow-hidden">
+    <img
+      src="assets/images/auth-bg.png"
+      alt="Product suite showcase"
+      class="absolute inset-0 w-full h-full object-cover"
+      width="1280"
+      height="960"
+    />
+  </div>
+
+  <!-- Right side - login form -->
+  <div class="flex flex-1 flex-col px-4 py-8 pt-[.65rem]">
+
+    <!-- Toolbar -->
+    <!-- TODO: To fix -->
+    <div class="flex items-center justify-between mb-8">
+
+      <a href="/" class="h-10 object-contain">
+        @if (themeService.darkMode()) {
+          <img ngSrc="assets/images/logo-slim-white.svg" class="logo" alt="FLISoL" height="40" width="89"
+               [priority]="true" />
+        } @else {
+          <img ngSrc="assets/images/logo-slim.svg" class="logo" alt="FLISoL" height="40" width="89" [priority]="true" />
+        }
+      </a>
+
+      <!-- TODO: Where is the space between? -->
+
+      <div class="flex items-center gap-2">
+        <app-theme-selector></app-theme-selector>
+
+        <!-- <app-language-selector></app-language-selector> -->
+      </div>
+
+    </div>
+
+    <div class="flex flex-1 items-center justify-center">
+      <div class="w-full max-w-md">
+
+        <!-- Card -->
+        <div class="p-8 md:p-0"><!-- bg-login-card border border-login-card-border/30 rounded-xl p-8 -->
+          <ng-content></ng-content>
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-8 flex flex-col items-center gap-4 footerx">
+
+          <!-- Version -->
+          <div class="text-default text-[.65rem] cursor-default relative">
+            v{{ version() }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
