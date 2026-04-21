@@ -9,7 +9,7 @@ import { Participants } from './pages/registrations/participants/participants';
 import { Collaborators } from './pages/registrations/collaborators/collaborators';
 import { Organizers } from './pages/registrations/organizers/organizers';
 import { Users } from './pages/registrations/users/users';
-import { CheckIn } from './pages/check-in/check-in';
+import { Attendance } from './pages/attendance/attendance';
 import { Profile } from './pages/profile/profile';
 
 import { guestGuard } from './guards/guest/guest-guard';
@@ -50,7 +50,7 @@ export const routes: Routes = [
           { path: 'users', component: Users },
         ],
       },
-      { path: 'check-in', component: CheckIn },
+      { path: 'attendance', component: Attendance },
       { path: 'profile', component: Profile },
     ],
   },
