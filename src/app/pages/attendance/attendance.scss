@@ -1,3 +1,37 @@
 :host {
   display: block;
 }
+
+.attendance-card {
+  background: transparent;
+}
+
+.attendance-meta-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.attendance-meta-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1rem;
+  letter-spacing: 0.02em;
+  opacity: 0.72;
+  text-transform: uppercase;
+}
+
+.attendance-meta-value {
+  font-size: 0.95rem;
+  line-height: 1.35rem;
+  word-break: break-word;
+}
+
+@media (min-width: 480px) {
+  .attendance-meta-row {
+    display: grid;
+    grid-template-columns: 96px minmax(0, 1fr);
+    align-items: start;
+    gap: 0.75rem;
+  }
+}

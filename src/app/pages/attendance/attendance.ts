@@ -69,6 +69,14 @@ export class Attendance implements AfterViewInit {
     'actions',
   ];
 
+  public readonly mobileDisplayedColumns: string[] = [
+    'name',
+    'kind',
+    'federalCode',
+    'checkedIn',
+    'actions',
+  ];
+
   public readonly dataSource = new MatTableDataSource<AttendanceRecord>([]);
 
   public readonly loading = signal(false);
@@ -226,6 +234,10 @@ export class Attendance implements AfterViewInit {
 
   public getKindLabel(row: AttendanceRecord): string {
     return row.kind_label || '—';
+  }
+
+  public trackByAttendance(_: number, row: AttendanceRecord): string {
+    return `${row.kind}-${row.id}`;
   }
 
   private mapSortField(field: string): string {
