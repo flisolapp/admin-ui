@@ -44,35 +44,6 @@
   </button>
   -->
 
-  <!--
-  <button matButton [matMenuTriggerFor]="registrations">Cadastro</button>
-  <mat-menu #registrations="matMenu">
-    <button mat-menu-item>Edições</button>
-    <button mat-menu-item>Palestras</button>
-    <button mat-menu-item>Cronogramas</button>
-    <button mat-menu-item>Participantes</button>
-    <button mat-menu-item>Colaboradores</button>
-    <button mat-menu-item>Organizadores</button>
-    <button mat-menu-item>Usuários</button>
-  </mat-menu>
-
-  <button matButton>Credenciamento</button>
-
-  <div class="spacer"></div>
-
-  <button matIconButton  [matMenuTriggerFor]="personal">
-    <mat-icon>person</mat-icon>
-  </button>
-  <mat-menu #personal="matMenu">
-    <button mat-menu-item>Perfil</button>
-    <button mat-menu-item>Sair</button>
-  </mat-menu>
-
-  <app-theme-selector></app-theme-selector>
-
-  <app-language-selector></app-language-selector>
-  -->
-
   <div class="spacer flex-1"></div>
 
   <!-- Desktop actions -->
@@ -82,17 +53,6 @@
     -->
 
     <button mat-button [matMenuTriggerFor]="registrationsMenu">Cadastro</button>
-    <!--
-    <mat-menu #registrationsMenu="matMenu">
-      <button mat-menu-item [routerLink]="['/registrations/editions']">Edições</button>
-      <button mat-menu-item [routerLink]="['/registrations/talks']">Palestras</button>
-      <button mat-menu-item [routerLink]="['/registrations/schedules']">Cronogramas</button>
-      <button mat-menu-item [routerLink]="['/registrations/participants']">Participantes</button>
-      <button mat-menu-item [routerLink]="['/registrations/collaborators']">Colaboradores</button>
-      <button mat-menu-item [routerLink]="['/registrations/organizers']">Organizadores</button>
-      <button mat-menu-item [routerLink]="['/registrations/users']">Usuários</button>
-    </mat-menu>
-    -->
     <mat-menu #registrationsMenu="matMenu">
       @for (item of registrationItems; track item.route) {
         <button mat-menu-item [routerLink]="[item.route]">
@@ -101,14 +61,12 @@
       }
     </mat-menu>
 
-    <!--
     <button mat-button [routerLink]="['/check-in']">Credenciamento</button>
 
     <button mat-icon-button [routerLink]="['/profile']" [matTooltip]="'Perfil'"
             [matTooltipPosition]="'below'">
       <mat-icon>person</mat-icon>
     </button>
-    -->
 
     <app-theme-selector></app-theme-selector>
 
@@ -169,15 +127,6 @@
     </mat-menu>
 
     <mat-menu #mobileRegistrationsMenu="matMenu">
-      <!--
-      <button mat-menu-item [routerLink]="['/registrations/editions']">Edições</button>
-      <button mat-menu-item [routerLink]="['/registrations/talks']">Palestras</button>
-      <button mat-menu-item [routerLink]="['/registrations/schedules']">Cronogramas</button>
-      <button mat-menu-item [routerLink]="['/registrations/participants']">Participantes</button>
-      <button mat-menu-item [routerLink]="['/registrations/collaborators']">Colaboradores</button>
-      <button mat-menu-item [routerLink]="['/registrations/organizers']">Organizadores</button>
-      <button mat-menu-item [routerLink]="['/registrations/users']">Usuários</button>
-      -->
       @for (item of registrationItems; track item.route) {
         <button mat-menu-item [routerLink]="[item.route]">
           {{ item.label }}

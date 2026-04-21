@@ -51,7 +51,7 @@ export const routes: Routes = [
         ],
       },
       { path: 'check-in', component: CheckIn },
-      // { path: 'profile', component: Profile },
+      { path: 'profile', component: Profile },
     ],
   },
   {
