@@ -19,7 +19,7 @@ Before creating or running the project, ensure the following tools are
 installed:
 
 -   NVM (Node Version Manager)
--   Node.js **24.14.0**
+-   Node.js **24.15.0**
 -   npm
 
 ------------------------------------------------------------------------
@@ -29,8 +29,8 @@ installed:
 Install and use the recommended Node.js version:
 
 ``` bash
-nvm install 24.14.0
-nvm use 24.14.0
+nvm install 24.15.0
+nvm use 24.15.0
 ```
 
 ------------------------------------------------------------------------

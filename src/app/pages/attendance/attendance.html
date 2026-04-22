@@ -190,11 +190,11 @@
 
                     <button
                       mat-menu-item
-                      [disabled]="!canPrintLabel(row)"
-                      (click)="printLabel(row)"
+                      [disabled]="!canGenerateLabel(row)"
+                      (click)="generateLabel(row)"
                     >
-                      <mat-icon>print</mat-icon>
-                      <span>Imprimir etiqueta</span>
+                      <mat-icon>confirmation_number</mat-icon>
+                      <span>Gerar etiqueta</span>
                     </button>
                   </ng-template>
                 </mat-menu>
@@ -275,11 +275,11 @@
 
                         <button
                           mat-menu-item
-                          [disabled]="!canPrintLabel(row)"
-                          (click)="printLabel(row)"
+                          [disabled]="!canGenerateLabel(row)"
+                          (click)="generateLabel(row)"
                         >
-                          <mat-icon>print</mat-icon>
-                          <span>Imprimir etiqueta</span>
+                          <mat-icon>confirmation_number</mat-icon>
+                          <span>Gerar etiqueta</span>
                         </button>
                       </ng-template>
                     </mat-menu>

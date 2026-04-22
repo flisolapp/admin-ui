@@ -4,6 +4,12 @@ import { catchError, lastValueFrom, map, Observable, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { STORAGE_KEYS } from '../../constants/storage-keys';
 
+export interface EditionRecord {
+  id: string;
+  year: string;
+  label?: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })

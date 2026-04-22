@@ -25,6 +25,10 @@ import { finalize } from 'rxjs';
 import { PageStructure } from '../../components/page-structure/page-structure';
 import { ThemeService } from '../../services/theme/theme-service';
 import { AttendanceRecord, AttendanceService } from '../../services/attendance/attendance-service';
+import { LabelFormDialog, LabelFormDialogData } from './label-form-dialog/label-form-dialog';
+import { MatDialog } from '@angular/material/dialog';
+import { LabelRecord, LabelService } from '../../services/label/label-service';
+import { EditionRecord } from '../../services/edition/edition-service';
 
 @Component({
   selector: 'app-attendance',
@@ -51,6 +55,8 @@ import { AttendanceRecord, AttendanceService } from '../../services/attendance/a
 export class Attendance implements AfterViewInit {
   private readonly attendanceService = inject(AttendanceService);
   private readonly snackBar = inject(MatSnackBar);
+  private readonly dialog = inject(MatDialog);
+  private readonly labelService = inject(LabelService);
 
   public readonly themeService = inject(ThemeService);
 
@@ -193,7 +199,7 @@ export class Attendance implements AfterViewInit {
     return !!row.checked_in;
   }
 
-  public canPrintLabel(row: AttendanceRecord | null | undefined): boolean {
+  public canGenerateLabel(row: AttendanceRecord | null | undefined): boolean {
     if (!row) {
       return false;
     }
@@ -211,8 +217,86 @@ export class Attendance implements AfterViewInit {
     this.suspendedAction('Check-Out', row);
   }
 
-  public printLabel(row: AttendanceRecord): void {
-    this.suspendedAction('Imprimir etiqueta', row);
+  public generateLabel(row: AttendanceRecord): void {
+    // this.suspendedAction('Imprimir etiqueta', row);
+
+    const splittedName = this.labelService.splitName(row.name);
+
+    const dialogRef = this.dialog.open(LabelFormDialog, {
+      width: '560px',
+      maxWidth: '95vw',
+      data: {
+        mode: 'generate',
+        label: {
+          id: '' + row.id,
+          firstName: splittedName.firstName,
+          lastName: splittedName.lastName,
+          edition: {
+            id: '' + 22,
+            year: '2026',
+            label: "FLISOL'26",
+          } satisfies EditionRecord,
+          qrCode: 'https://flisol.app/' + row.kind + ',' + row.id,
+          info: 'https://flisol.app',
+        } satisfies LabelRecord,
+      } satisfies LabelFormDialogData,
+    });
+
+    dialogRef.afterClosed().subscribe((payload) => {
+      if (!payload) {
+        return;
+      }
+
+      console.log(payload);
+
+      const blob = this.labelService.generate(payload);
+
+      if (blob) {
+        const url = URL.createObjectURL(blob);
+        window.open(url, '_blank');
+      }
+    });
+
+    // const blob = this.labelService.generate(label);
+    //
+    // if (blob) {
+    //   const url = URL.createObjectURL(blob);
+    //   window.open(url, '_blank');
+    // }
+
+    // const blob = this.labelService.generate(label);
+    //
+    // if (blob) {
+    //   const url = URL.createObjectURL(blob);
+    //   const a = document.createElement('a');
+    //   a.href = url;
+    //   a.download = `label-${label.id}.png`;
+    //   a.click();
+    //   URL.revokeObjectURL(url);
+    // }
+
+    // dialogRef.afterClosed().subscribe((payload) => {
+    //   if (!payload) {
+    //     return;
+    //   }
+    //
+    //   this.usersService.create(payload).subscribe({
+    //     next: (response) => {
+    //       this.snackBar.open('Usuário criado com sucesso.', 'Fechar', {
+    //         duration: 2500,
+    //       });
+    //
+    //       this.openPasswordDialog(response);
+    //       this.page.set(1);
+    //       this.loadUsers();
+    //     },
+    //     error: () => {
+    //       this.snackBar.open('Erro ao criar usuário.', 'Fechar', {
+    //         duration: 3000,
+    //       });
+    //     },
+    //   });
+    // });
   }
 
   public suspendedAction(action: string, row: AttendanceRecord): void {
