@@ -27,8 +27,8 @@ export class LabelService {
 
     const parts = normalized.split(' ');
 
-    // First name = first token (max 10 chars)
-    const firstName = (parts[0] ?? '').slice(0, 10);
+    // First name = first token (max 14 chars)
+    const firstName = (parts[0] ?? '').slice(0, 14);
 
     // Last name = last token (max 14 chars)
     const lastName = parts.length > 1 ? parts[parts.length - 1].slice(0, 14) : '';
@@ -36,7 +36,7 @@ export class LabelService {
     return { firstName, lastName };
   }
 
-  public generate(label: LabelRecord): Blob | null {
+  public async generate(label: LabelRecord): Promise<Blob | null> {
     if (typeof document === 'undefined') {
       return null;
     }
@@ -56,7 +56,8 @@ export class LabelService {
     }
 
     // Background
-    ctx.fillStyle = '#f3f3f3';
+    // ctx.fillStyle = '#f3f3f3';
+    ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, width, height);
 
     // Improve text rendering
@@ -72,25 +73,27 @@ export class LabelService {
     // Layout reference areas
     const leftX = 28;
     const topY = 24;
-    const qrSize = 210;
+    const qrSize = 280;
     const qrX = 430;
-    const qrY = 228;
+    const qrY = 200;
 
     // First name
-    this.drawFittedMonoText(ctx, firstName, leftX, topY, 360, 92, 78, 42, 900);
+    // this.drawFittedMonoText(ctx, firstName, leftX, topY, 360, 92, 78, 42, 900);
+    this.drawFittedMonoText(ctx, firstName, leftX, topY, 720, 92, 78, 42, 900);
 
     // Last name
-    this.drawFittedMonoText(ctx, lastName, leftX, 150, 320, 62, 56, 28, 500);
+    // this.drawFittedMonoText(ctx, lastName, leftX, 150, 320, 62, 56, 28, 500);
+    this.drawFittedMonoText(ctx, lastName, leftX, 110, 720, 92, 78, 42, 500);
 
     // Edition
-    this.drawFittedMonoText(ctx, edition, leftX, 256, 280, 52, 50, 24, 500);
+    this.drawFittedMonoText(ctx, edition, leftX, 224, 280, 52, 50, 24, 500);
 
-    // Small id at bottom-left
-    if (label.id) {
-      ctx.fillStyle = '#000000';
-      ctx.font = '400 18px "Roboto Mono", "Courier New", monospace';
-      ctx.fillText(`#${label.id}`, leftX, 404);
-    }
+    // // Small id at bottom-left
+    // if (label.id) {
+    //   ctx.fillStyle = '#000000';
+    //   ctx.font = '400 18px "Roboto Mono", "Courier New", monospace';
+    //   ctx.fillText(`#${label.id}`, leftX, 404);
+    // }
 
     // QR Code
     if (qrText) {
@@ -104,7 +107,7 @@ export class LabelService {
     // Vertical info text on right side
     if (info) {
       ctx.save();
-      ctx.translate(width - 22, height - 46);
+      ctx.translate(width - 30, height - 30);
       ctx.rotate(-Math.PI / 2);
       ctx.fillStyle = '#000000';
       ctx.font = '400 22px "Roboto Mono", "Courier New", monospace';
@@ -163,5 +166,34 @@ export class LabelService {
     }
 
     return new Blob([bytes], { type: mime });
+  }
+
+  public async rotateClockwise(blob: Blob): Promise<Blob> {
+    const imageBitmap = await createImageBitmap(blob);
+
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    if (!ctx) {
+      throw new Error('Canvas context not available');
+    }
+
+    // Swap width/height because of rotation
+    canvas.width = imageBitmap.height;
+    canvas.height = imageBitmap.width;
+
+    // Move origin to center for rotation
+    ctx.translate(canvas.width / 2, canvas.height / 2);
+
+    // Rotate 90° clockwise
+    ctx.rotate(Math.PI / 2);
+
+    // Draw image centered
+    ctx.drawImage(imageBitmap, -imageBitmap.width / 2, -imageBitmap.height / 2);
+
+    // Export as Blob
+    return await new Promise<Blob>((resolve) => {
+      canvas.toBlob((b) => resolve(b!), blob.type);
+    });
   }
 }

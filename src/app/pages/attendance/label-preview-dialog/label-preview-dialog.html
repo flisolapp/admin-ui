@@ -1,1 +1,16 @@
-<p>label-preview-dialog works!</p>
+<h1 mat-dialog-title>Pre-visualização</h1>
+
+<div mat-dialog-content>
+  <img [src]="data.imageUrl" alt="Preview" class="preview" />
+</div>
+
+<div mat-dialog-actions class="actions">
+  <button mat-button (click)="print()">
+    <span class="material-symbols-outlined print">print</span>
+    Imprimir
+  </button>
+
+  <button mat-button mat-dialog-close (click)="close()" cdkFocusInitial>
+    Fechar
+  </button>
+</div>

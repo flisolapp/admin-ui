@@ -1,0 +1,17 @@
+.preview {
+  max-width: 100%;
+  max-height: 500px;
+  margin: 16px 0;
+  border-radius: var(--mat-dialog-container-shape, var(--mat-sys-corner-extra-large, 4px));
+}
+
+.actions {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.print {
+  font-size: 1rem;
+  vertical-align: sub;
+}

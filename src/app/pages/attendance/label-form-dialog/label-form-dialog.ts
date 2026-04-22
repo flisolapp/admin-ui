@@ -38,7 +38,7 @@ export class LabelFormDialog {
 
   constructor(@Inject(MAT_DIALOG_DATA) public readonly data: LabelFormDialogData) {
     this.form = this.fb.nonNullable.group({
-      firstName: [data.label?.firstName ?? '', [Validators.required, Validators.maxLength(10)]],
+      firstName: [data.label?.firstName ?? '', [Validators.required, Validators.maxLength(14)]],
       lastName: [data.label?.lastName ?? '', [Validators.required, Validators.maxLength(14)]],
     });
   }

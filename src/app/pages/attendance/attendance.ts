@@ -26,9 +26,10 @@ import { PageStructure } from '../../components/page-structure/page-structure';
 import { ThemeService } from '../../services/theme/theme-service';
 import { AttendanceRecord, AttendanceService } from '../../services/attendance/attendance-service';
 import { LabelFormDialog, LabelFormDialogData } from './label-form-dialog/label-form-dialog';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { LabelRecord, LabelService } from '../../services/label/label-service';
 import { EditionRecord } from '../../services/edition/edition-service';
+import { LabelPreviewDialog } from './label-preview-dialog/label-preview-dialog';
 
 @Component({
   selector: 'app-attendance',
@@ -242,18 +243,52 @@ export class Attendance implements AfterViewInit {
       } satisfies LabelFormDialogData,
     });
 
-    dialogRef.afterClosed().subscribe((payload) => {
+    dialogRef.afterClosed().subscribe(async (payload) => {
       if (!payload) {
         return;
       }
 
+      if (payload.firstName) {
+        payload.firstName = payload.firstName.toUpperCase();
+        // payload.firstName = 'XXXXXXXXXX';
+        // payload.firstName = 'XXXXXXXXXXXXXX';
+      }
+
+      if (payload.lastName) {
+        payload.lastName = payload.lastName.toUpperCase();
+        // payload.lastName = 'XXXXXXXXXXXXXX';
+      }
+
       console.log(payload);
 
-      const blob = this.labelService.generate(payload);
+      try {
+        const data: Blob | null = await this.labelService.generate(payload);
 
-      if (blob) {
-        const url = URL.createObjectURL(blob);
-        window.open(url, '_blank');
+        if (data) {
+          // const url = URL.createObjectURL(blob);
+          // window.open(url, '_blank');
+
+          // this.downloadingItem.set(item);
+
+          // Assuming this returns a PNG Blob
+          // const data: Blob = await this.certificateService.certificate(item.code);
+
+          const imageUrl: string = URL.createObjectURL(data);
+
+          const dialogRef: MatDialogRef<LabelPreviewDialog> = this.dialog.open(LabelPreviewDialog, {
+            data: { imageUrl }, // , code: item.code },
+            width: '800px',
+          });
+
+          dialogRef.afterClosed().subscribe((): void => {
+            // Clean up memory after dialog closes
+            URL.revokeObjectURL(imageUrl);
+          });
+        }
+      } catch (error) {
+        console.error('Preview failed', error);
+      } finally {
+        // this.downloadingItem.set(null);
       }
     });
 
