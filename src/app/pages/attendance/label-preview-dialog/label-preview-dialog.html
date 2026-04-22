@@ -16,15 +16,20 @@
         type="button"
         class="print-button"
         (click)="print()"
+        [disabled]="printing()"
       >
-        <mat-icon>print</mat-icon>
-        <span>Imprimir</span>
+        @if (printing()) {
+          <mat-spinner diameter="20" mode="indeterminate"></mat-spinner>
+        } @else {
+          <mat-icon>print</mat-icon>
+          <span>Imprimir</span>
+        }
       </button>
 
       <mat-form-field appearance="outline" class="connection-field">
         <mat-label>Conexão</mat-label>
 
-        <mat-select formControlName="connectionType">
+        <mat-select formControlName="connectionType" [disabled]="printing()">
           <mat-select-trigger>
             <span class="select-trigger-content">
               <mat-icon>
@@ -60,6 +65,7 @@
       class="close-button"
       cdkFocusInitial
       (click)="close()"
+      [disabled]="printing()"
     >
       Fechar
     </button>

@@ -31,7 +31,31 @@
   min-height: 56px;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
+}
+
+/* garante alinhamento do conteúdo interno do botão Material */
+::ng-deep .print-button .mdc-button__label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* evita que o ícone fique “descendo” por line-height */
+.print-button mat-icon {
+  margin: 0;
+  line-height: 1;
+  height: 20px;
+  width: 20px;
+  font-size: 20px;
+}
+
+/* spinner centralizado igual ao ícone */
+.print-button mat-spinner {
+  display: block;
+  margin: 0;
 }
 
 .connection-field {

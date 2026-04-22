@@ -1,4 +1,4 @@
-import { Component, Inject, inject, OnInit } from '@angular/core';
+import { Component, Inject, inject, OnInit, signal } from '@angular/core';
 import {
   MAT_DIALOG_DATA,
   MatDialogActions,
@@ -25,6 +25,7 @@ import {
   LabelPrinterService,
 } from '../../../services/label-printer/label-printer-service';
 import { STORAGE_KEYS } from '../../../constants/storage-keys';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'app-label-preview-dialog',
@@ -40,6 +41,7 @@ import { STORAGE_KEYS } from '../../../constants/storage-keys';
     MatFormFieldModule,
     MatSelectModule,
     ReactiveFormsModule,
+    MatProgressSpinner,
   ],
   templateUrl: './label-preview-dialog.html',
   styleUrl: './label-preview-dialog.scss',
@@ -56,6 +58,8 @@ export class LabelPreviewDialog implements OnInit {
     connectionType: 'serial' as ConnectionType,
   });
 
+  public readonly printing = signal(false);
+
   constructor(
     private readonly dialogRef: MatDialogRef<LabelPreviewDialog>,
     @Inject(MAT_DIALOG_DATA) public data: { imageUrl: string },
@@ -67,6 +71,7 @@ export class LabelPreviewDialog implements OnInit {
   }
 
   public async print(): Promise<void> {
+    this.printing.set(true);
     let connected = false;
 
     try {
@@ -98,6 +103,8 @@ export class LabelPreviewDialog implements OnInit {
       if (connected) {
         await this.labelPrinterService.disconnect();
       }
+
+      this.printing.set(false);
     }
   }
 

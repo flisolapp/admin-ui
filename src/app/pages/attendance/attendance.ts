@@ -94,6 +94,8 @@ export class Attendance implements AfterViewInit {
   public readonly sortBy = signal<string | null>('name');
   public readonly sortDirection = signal<'asc' | 'desc' | ''>('asc');
 
+  public readonly checkingInKeys = signal<Record<string, boolean>>({});
+
   public readonly checkedInCount = computed(
     () => this.dataSource.data.filter((item) => item.checked_in).length,
   );
@@ -171,25 +173,43 @@ export class Attendance implements AfterViewInit {
 
   public toggleCheckIn(row: AttendanceRecord): void {
     const nextValue = !row.checked_in;
+    const key = this.getAttendanceKey(row);
 
-    this.attendanceService.toggleCheckIn(row.kind, row.id, nextValue).subscribe({
-      next: (updated) => {
-        this.dataSource.data = this.dataSource.data.map((item) =>
-          item.kind === updated.kind && item.id === updated.id ? updated : item,
-        );
+    if (this.isCheckingIn(row)) {
+      return;
+    }
 
-        this.snackBar.open(
-          updated.checked_in ? 'Check-in realizado.' : 'Check-in removido.',
-          'Fechar',
-          { duration: 2500 },
-        );
-      },
-      error: () => {
-        this.snackBar.open('Erro ao atualizar check-in.', 'Fechar', {
-          duration: 3000,
-        });
-      },
-    });
+    this.setCheckingIn(key, true);
+
+    this.attendanceService
+      .toggleCheckIn(row.kind, row.id, nextValue)
+      .pipe(finalize(() => this.setCheckingIn(key, false)))
+      .subscribe({
+        next: (updated) => {
+          this.dataSource.data = this.dataSource.data.map((item) =>
+            item.kind === updated.kind && item.id === updated.id ? updated : item,
+          );
+
+          this.snackBar.open(
+            updated.checked_in ? 'Check-in realizado.' : 'Check-in removido.',
+            'Fechar',
+            { duration: 2500 },
+          );
+        },
+        error: () => {
+          this.snackBar.open('Erro ao atualizar check-in.', 'Fechar', {
+            duration: 3000,
+          });
+        },
+      });
+  }
+
+  public isCheckingIn(row: AttendanceRecord | null | undefined): boolean {
+    if (!row) {
+      return false;
+    }
+
+    return !!this.checkingInKeys()[this.getAttendanceKey(row)];
   }
 
   public canCheckOut(row: AttendanceRecord | null | undefined): boolean {
@@ -357,6 +377,22 @@ export class Attendance implements AfterViewInit {
 
   public trackByAttendance(_: number, row: AttendanceRecord): string {
     return `${row.kind}-${row.id}`;
+  }
+
+  private getAttendanceKey(row: AttendanceRecord): string {
+    return `${row.kind}-${row.id}`;
+  }
+
+  private setCheckingIn(key: string, value: boolean): void {
+    this.checkingInKeys.update((state) => {
+      if (value) {
+        return { ...state, [key]: true };
+      }
+
+      const nextState = { ...state };
+      delete nextState[key];
+      return nextState;
+    });
   }
 
   private mapSortField(field: string): string {
