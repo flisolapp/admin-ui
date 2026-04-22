@@ -21,8 +21,10 @@
         @if (printing()) {
           <mat-spinner diameter="20" mode="indeterminate"></mat-spinner>
         } @else {
-          <mat-icon>print</mat-icon>
-          <span>Imprimir</span>
+          <span class="inline-flex items-center gap-2">
+            <mat-icon>print</mat-icon>
+            <span>Imprimir</span>
+          </span>
         }
       </button>
 
