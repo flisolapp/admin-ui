@@ -1,17 +1,77 @@
 .preview {
+  display: block;
   max-width: 100%;
-  max-height: 500px;
-  margin: 16px 0;
-  border-radius: var(--mat-dialog-container-shape, var(--mat-sys-corner-extra-large, 4px));
+  max-height: 60vh;
+  margin: 0 auto;
+  border-radius: 24px;
 }
 
 .actions {
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
+  padding-top: 12px;
 }
 
-.print {
-  font-size: 1rem;
-  vertical-align: sub;
+.action-form {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.action-primary-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.print-button {
+  height: 56px;
+  min-height: 56px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.connection-field {
+  width: 180px;
+}
+
+.close-button {
+  height: 40px;
+}
+
+.select-trigger-content,
+.option-content {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+::ng-deep .connection-field .mat-mdc-form-field-subscript-wrapper {
+  display: none;
+}
+
+::ng-deep .connection-field .mat-mdc-text-field-wrapper {
+  height: 56px;
+}
+
+::ng-deep .connection-field .mat-mdc-form-field-flex {
+  height: 56px;
+  align-items: center;
+}
+
+::ng-deep .connection-field .mat-mdc-select-trigger {
+  display: flex;
+  align-items: center;
+  min-height: 24px;
+}
+
+::ng-deep .connection-field .mat-mdc-form-field-infix {
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  padding-top: 16px !important;
+  padding-bottom: 16px !important;
 }

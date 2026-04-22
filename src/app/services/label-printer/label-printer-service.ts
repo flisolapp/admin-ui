@@ -9,7 +9,7 @@ import {
 } from '@mmote/niimbluelib';
 
 export type ConnectionState = 'connecting' | 'connected' | 'disconnected';
-export type ConnectionType = 'bluetooth' | 'serial' | 'capacitor-ble';
+export type ConnectionType = 'bluetooth' | 'serial'; //  | 'capacitor-ble';
 
 // Reference: https://github.com/MultiMote/niimbluelib/blob/main/example/main.js
 
@@ -90,8 +90,19 @@ export class LabelPrinterService {
     });
   }
 
-  public async connect(): Promise<void> {
-    this.newClient('serial');
+  public async connect(type: ConnectionType = 'serial'): Promise<void> {
+    switch (type) {
+      case 'serial':
+        this.newClient('serial');
+        break;
+
+      case 'bluetooth':
+        this.newClient('ble');
+        break;
+
+      default:
+        throw new Error('Printer connection type not found');
+    }
 
     if (!this.client) {
       throw new Error('Printer client was not initialized');
@@ -121,17 +132,6 @@ export class LabelPrinterService {
   //   }
   // };
 
-  // /** On "Connect Serial" clicked */
-  // serialConnectButton.onclick = async () => {
-  //   newClient("serial");
-  //
-  //   try {
-  //     await client.connect();
-  //   } catch (e) {
-  //     alert(e);
-  //   }
-  // };
-
   public async printBlob(blob: Blob): Promise<void> {
     try {
       const imageBitmap = await createImageBitmap(blob);
@@ -143,12 +143,14 @@ export class LabelPrinterService {
         throw new Error('Canvas context not available');
       }
 
-      // Swap width/height because of rotation
-      canvas.width = imageBitmap.height;
-      canvas.height = imageBitmap.width;
+      // Keep the image dimensions exactly as received
+      canvas.width = imageBitmap.width;
+      canvas.height = imageBitmap.height;
 
-      // Draw image centered
-      ctx.drawImage(imageBitmap, 0, 0);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(imageBitmap, 0, 0, canvas.width, canvas.height);
 
       await this.printCanvas(canvas);
     } catch (error: unknown) {

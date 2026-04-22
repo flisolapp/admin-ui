@@ -1,16 +1,67 @@
-<h1 mat-dialog-title>Pre-visualização</h1>
+<h1 mat-dialog-title>Pré-visualização</h1>
 
-<div mat-dialog-content>
+<div mat-dialog-content class="flex justify-center">
   <img [src]="data.imageUrl" alt="Preview" class="preview" />
 </div>
 
 <div mat-dialog-actions class="actions">
-  <button mat-button (click)="print()">
-    <span class="material-symbols-outlined print">print</span>
-    Imprimir
-  </button>
+  <form
+    [formGroup]="form"
+    class="action-form"
+  >
+    <div class="action-primary-row">
+      <button
+        mat-flat-button
+        color="primary"
+        type="button"
+        class="print-button"
+        (click)="print()"
+      >
+        <mat-icon>print</mat-icon>
+        <span>Imprimir</span>
+      </button>
 
-  <button mat-button mat-dialog-close (click)="close()" cdkFocusInitial>
-    Fechar
-  </button>
+      <mat-form-field appearance="outline" class="connection-field">
+        <mat-label>Conexão</mat-label>
+
+        <mat-select formControlName="connectionType">
+          <mat-select-trigger>
+            <span class="select-trigger-content">
+              <mat-icon>
+                {{ form.controls.connectionType.value === 'serial' ? 'usb' : 'bluetooth' }}
+              </mat-icon>
+              <span>
+                {{ form.controls.connectionType.value === 'serial' ? 'USB' : 'Bluetooth' }}
+              </span>
+            </span>
+          </mat-select-trigger>
+
+          <mat-option value="serial">
+            <span class="option-content">
+              <mat-icon>usb</mat-icon>
+              <span>USB</span>
+            </span>
+          </mat-option>
+
+          <mat-option value="bluetooth">
+            <span class="option-content">
+              <mat-icon>bluetooth</mat-icon>
+              <span>Bluetooth</span>
+            </span>
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <button
+      mat-button
+      type="button"
+      mat-dialog-close
+      class="close-button"
+      cdkFocusInitial
+      (click)="close()"
+    >
+      Fechar
+    </button>
+  </form>
 </div>

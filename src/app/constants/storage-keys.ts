@@ -23,6 +23,7 @@ export const STORAGE_KEYS = {
   // App preferences
   LANGUAGE: 'flisolapp.Language',
   DARK_MODE: 'flisolapp.DarkMode',
+  LABEL_PRINTER_CONNECTION_TYPE: 'flisolapp.LabelPrinterConnectionType',
 } as const;
 
 // ── IndexedDB key prefixes ────────────────────────────────────────────────────

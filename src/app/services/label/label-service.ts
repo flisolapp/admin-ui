@@ -168,8 +168,41 @@ export class LabelService {
     return new Blob([bytes], { type: mime });
   }
 
-  public async rotateClockwise(blob: Blob): Promise<Blob> {
+  // public async rotateClockwise(blob: Blob): Promise<Blob> {
+  //   const imageBitmap = await createImageBitmap(blob);
+  //
+  //   const canvas = document.createElement('canvas');
+  //   const ctx = canvas.getContext('2d');
+  //
+  //   if (!ctx) {
+  //     throw new Error('Canvas context not available');
+  //   }
+  //
+  //   // Swap width/height because of rotation
+  //   canvas.width = imageBitmap.height;
+  //   canvas.height = imageBitmap.width;
+  //
+  //   // Move origin to center for rotation
+  //   ctx.translate(canvas.width / 2, canvas.height / 2);
+  //
+  //   // Rotate 90° clockwise
+  //   ctx.rotate(Math.PI / 2);
+  //
+  //   // Draw image centered
+  //   ctx.drawImage(imageBitmap, -imageBitmap.width / 2, -imageBitmap.height / 2);
+  //
+  //   // Export as Blob
+  //   return await new Promise<Blob>((resolve) => {
+  //     canvas.toBlob((b) => resolve(b!), blob.type);
+  //   });
+  // }
+
+  public async prepareForPrint(blob: Blob): Promise<Blob> {
     const imageBitmap = await createImageBitmap(blob);
+
+    // 40 x 60 mm at ~203 dpi => about 320 x 480 px
+    const targetWidth = 320;
+    const targetHeight = 480;
 
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
@@ -178,22 +211,38 @@ export class LabelService {
       throw new Error('Canvas context not available');
     }
 
-    // Swap width/height because of rotation
-    canvas.width = imageBitmap.height;
-    canvas.height = imageBitmap.width;
+    // If source is landscape, rotate once to portrait.
+    const shouldRotate = imageBitmap.width > imageBitmap.height;
 
-    // Move origin to center for rotation
-    ctx.translate(canvas.width / 2, canvas.height / 2);
+    canvas.width = targetWidth;
+    canvas.height = targetHeight;
 
-    // Rotate 90° clockwise
-    ctx.rotate(Math.PI / 2);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, targetWidth, targetHeight);
+    ctx.imageSmoothingEnabled = false;
 
-    // Draw image centered
-    ctx.drawImage(imageBitmap, -imageBitmap.width / 2, -imageBitmap.height / 2);
+    if (shouldRotate) {
+      ctx.save();
+      ctx.translate(targetWidth / 2, targetHeight / 2);
+      ctx.rotate(Math.PI / 2);
 
-    // Export as Blob
-    return await new Promise<Blob>((resolve) => {
-      canvas.toBlob((b) => resolve(b!), blob.type);
+      // After rotation, fit source into portrait destination.
+      ctx.drawImage(imageBitmap, -targetHeight / 2, -targetWidth / 2, targetHeight, targetWidth);
+
+      ctx.restore();
+    } else {
+      ctx.drawImage(imageBitmap, 0, 0, targetWidth, targetHeight);
+    }
+
+    return await new Promise<Blob>((resolve, reject) => {
+      canvas.toBlob((result) => {
+        if (!result) {
+          reject(new Error('Failed to export label blob'));
+          return;
+        }
+
+        resolve(result);
+      }, 'image/png');
     });
   }
 }
