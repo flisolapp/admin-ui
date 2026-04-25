@@ -33,6 +33,7 @@ import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 export class Toolbar {
   public registrationItems = [
     // { label: 'Edições', route: '/registrations/editions' },
+    { label: 'Locais da edição', route: '/registrations/editions/22/places' },
     { label: 'Palestras', route: '/registrations/talks' },
     // { label: 'Cronograma', route: '/registrations/schedule' },
     { label: 'Participantes', route: '/registrations/participants' },
