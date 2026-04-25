@@ -5,6 +5,14 @@ import { environment } from '../../../environments/environment';
 
 export type AttendanceKind = 'participant' | 'collaborator' | 'organizer' | 'speaker_talk';
 
+export interface PeopleRecord {
+  id: number | null;
+  name: string | null;
+  federalCode: string | null;
+  email: string | null;
+  phone: string | null;
+}
+
 export interface AttendanceRecord {
   id: number;
   kind: AttendanceKind;
@@ -84,9 +92,11 @@ export class AttendanceService {
     kind: AttendanceKind,
     id: number,
     checkedIn: boolean,
+    data?: any,
   ): Observable<AttendanceRecord> {
     return this.http.patch<AttendanceRecord>(`${this.baseUrl}/${kind}/${id}/check-in`, {
       checked_in: checkedIn,
+      data: data,
     });
   }
 }

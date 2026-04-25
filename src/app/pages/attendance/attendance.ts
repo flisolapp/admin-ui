@@ -24,12 +24,20 @@ import { finalize } from 'rxjs';
 
 import { PageStructure } from '../../components/page-structure/page-structure';
 import { ThemeService } from '../../services/theme/theme-service';
-import { AttendanceRecord, AttendanceService } from '../../services/attendance/attendance-service';
+import {
+  AttendanceRecord,
+  AttendanceService,
+  PeopleRecord,
+} from '../../services/attendance/attendance-service';
 import { LabelFormDialog, LabelFormDialogData } from './label-form-dialog/label-form-dialog';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { LabelRecord, LabelService } from '../../services/label/label-service';
 import { EditionRecord } from '../../services/edition/edition-service';
 import { LabelPreviewDialog } from './label-preview-dialog/label-preview-dialog';
+import {
+  PersonalDataConfirmationDialog,
+  PersonalDataConfirmationDialogData,
+} from './personal-data-confirmation-dialog/personal-data-confirmation-dialog';
 
 @Component({
   selector: 'app-attendance',
@@ -179,10 +187,99 @@ export class Attendance implements AfterViewInit {
       return;
     }
 
+    if (!nextValue) {
+      this.realizeToggleCheckIn(row, nextValue);
+    } else {
+      const dialogRef = this.dialog.open(PersonalDataConfirmationDialog, {
+        width: '560px',
+        maxWidth: '95vw',
+        data: {
+          mode: 'edit',
+          person: {
+            id: row.people_id,
+            name: row.name,
+            federalCode: row.federal_code,
+            email: row.email,
+            phone: row.phone,
+          } satisfies PeopleRecord,
+        } satisfies PersonalDataConfirmationDialogData,
+      });
+
+      dialogRef.afterClosed().subscribe(async (payload) => {
+        if (!payload) {
+          row.checked_in = false;
+
+          this.dataSource.data = this.dataSource.data.map((item) =>
+            item.kind === row.kind && item.id === row.id ? { ...item, checked_in: false } : item,
+          );
+
+          this.setCheckingIn(key, false);
+          return;
+        }
+
+        row.name = payload.name;
+        row.federal_code = payload.federalCode;
+        row.email = payload.email;
+        row.phone = payload.phone;
+        // TODO: Question about acceptance of Terms, Prizes and under LGPD
+
+        this.realizeToggleCheckIn(row, nextValue);
+      });
+
+      // const blob = this.labelService.generate(label);
+      //
+      // if (blob) {
+      //   const url = URL.createObjectURL(blob);
+      //   window.open(url, '_blank');
+      // }
+
+      // const blob = this.labelService.generate(label);
+      //
+      // if (blob) {
+      //   const url = URL.createObjectURL(blob);
+      //   const a = document.createElement('a');
+      //   a.href = url;
+      //   a.download = `label-${label.id}.png`;
+      //   a.click();
+      //   URL.revokeObjectURL(url);
+      // }
+
+      // dialogRef.afterClosed().subscribe((payload) => {
+      //   if (!payload) {
+      //     return;
+      //   }
+      //
+      //   this.usersService.create(payload).subscribe({
+      //     next: (response) => {
+      //       this.snackBar.open('Usuário criado com sucesso.', 'Fechar', {
+      //         duration: 2500,
+      //       });
+      //
+      //       this.openPasswordDialog(response);
+      //       this.page.set(1);
+      //       this.loadUsers();
+      //     },
+      //     error: () => {
+      //       this.snackBar.open('Erro ao criar usuário.', 'Fechar', {
+      //         duration: 3000,
+      //       });
+      //     },
+      //   });
+      // });
+    }
+  }
+
+  private realizeToggleCheckIn(row: AttendanceRecord, nextValue: boolean): void {
+    const key = this.getAttendanceKey(row);
+
+    if (this.isCheckingIn(row)) {
+      return;
+    }
+
     this.setCheckingIn(key, true);
 
     this.attendanceService
-      .toggleCheckIn(row.kind, row.id, nextValue)
+      .toggleCheckIn(row.kind, row.id, nextValue, nextValue ? row : null)
       .pipe(finalize(() => this.setCheckingIn(key, false)))
       .subscribe({
         next: (updated) => {
@@ -257,7 +354,7 @@ export class Attendance implements AfterViewInit {
             year: '2026',
             label: "FLISOL'26",
           } satisfies EditionRecord,
-          qrCode: 'https://flisol.app/' + row.kind + ',' + row.id,
+          qrCode: 'https://flisol.app', // /' + row.kind + ',' + row.id,
           info: 'https://flisol.app',
         } satisfies LabelRecord,
       } satisfies LabelFormDialogData,

@@ -1,0 +1,90 @@
+<h2 mat-dialog-title class="m-0 px-6 pt-6 text-xl font-semibold text-slate-900">
+  Revisar dados
+</h2>
+
+<form [formGroup]="form" class="block">
+  <div
+    mat-dialog-content
+    class="flex flex-col gap-4 px-6 pt-2 pb-0"
+  >
+    <mat-form-field appearance="outline" class="w-full">
+      <mat-label>Nome</mat-label>
+      <input matInput formControlName="name" maxlength="255" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="w-full">
+      <mat-label>CPF</mat-label>
+      <input
+        matInput
+        formControlName="federalCode"
+        placeholder="000.000.000-00"
+        inputmode="numeric"
+        autocomplete="off"
+        (input)="onFederalCodeInput($event)"
+        maxlength="14"
+      />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="w-full">
+      <mat-label>E-mail</mat-label>
+      <input matInput type="email" formControlName="email" autocomplete="email" maxlength="255" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="w-full">
+      <mat-label>Telefone</mat-label>
+      <input
+        matInput
+        formControlName="phone"
+        placeholder="(00) 00000-0000"
+        inputmode="tel"
+        autocomplete="tel"
+        (input)="onPhoneInput($event)"
+        maxlength="255"
+      />
+    </mat-form-field>
+
+    <!-- Acceptance -->
+    <div class="flex flex-col gap-2 w-full">
+      <label class="text-sm text-default font-medium">
+        Confirmo que os dados informados estão corretos e autorizo seu uso para fins do evento *
+      </label>
+
+      <mat-radio-group
+        formControlName="acceptTerms"
+        class="flex gap-6"
+        aria-label="Confirmação dos dados pessoais"
+      >
+        <mat-radio-button value="yes">Sim</mat-radio-button>
+        <mat-radio-button value="no">Não</mat-radio-button>
+      </mat-radio-group>
+    </div>
+  </div>
+
+  <div
+    mat-dialog-actions
+    class="flex w-full flex-col items-stretch gap-4 px-6 py-5 sm:flex-row sm:items-center sm:justify-between"
+  >
+    <div class="flex min-h-9 items-center">
+      <!--
+      @if (isEditMode) {
+        <mat-slide-toggle formControlName="is_active" class="m-0">
+          {{ form.get('is_active')?.value ? 'Ativo' : 'Inativo' }}
+        </mat-slide-toggle>
+      }
+      -->
+    </div>
+
+    <div class="flex w-full justify-end gap-3 sm:w-auto">
+      <button mat-button type="button" (click)="close()">Cancelar</button>
+      <button
+        mat-flat-button
+        color="primary"
+        type="button"
+        (click)="submit()"
+        [disabled]="form.invalid || form.get('acceptTerms')?.value !== 'yes'"
+      >
+        Confirmar
+      </button>
+    </div>
+  </div>
+</form>
