@@ -159,8 +159,8 @@ export class EditionPlacesService {
           }
 
           .qr-code {
-            width: 260px;
-            height: 260px;
+            width: 460px;
+            height: 460px;
             margin-top: 24px;
           }
         </style>
