@@ -33,7 +33,11 @@
             (click)="openReleaseDialog()"
             [disabled]="loading() || releasing() || total() === 0"
           >
-            @if (releasing()) { Liberando... } @else { Liberar certificados }
+            @if (releasing()) {
+              Liberando...
+            } @else {
+              Liberar certificados
+            }
           </button>
         </div>
       </div>
@@ -73,19 +77,24 @@
           <!-- Pills + count on the same row below the search -->
           <div class="flex flex-wrap items-center gap-2 mt-2">
             <div class="flex flex-wrap gap-2 flex-1">
-              <button type="button" class="pill" [class.pill--active]="roleFilter() === 'Todos'" (click)="setRoleFilter('Todos')">
+              <button type="button" class="pill" [class.pill--active]="roleFilter() === 'Todos'"
+                      (click)="setRoleFilter('Todos')">
                 Todos <span class="pill-count">{{ total() }}</span>
               </button>
-              <button type="button" class="pill pill--organizer" [class.pill--active]="roleFilter() === 'Organizador'" (click)="setRoleFilter('Organizador')">
+              <button type="button" class="pill pill--organizer" [class.pill--active]="roleFilter() === 'Organizador'"
+                      (click)="setRoleFilter('Organizador')">
                 Organizador <span class="pill-count">{{ countOrganizer() }}</span>
               </button>
-              <button type="button" class="pill pill--collaborator" [class.pill--active]="roleFilter() === 'Colaborador'" (click)="setRoleFilter('Colaborador')">
+              <button type="button" class="pill pill--collaborator"
+                      [class.pill--active]="roleFilter() === 'Colaborador'" (click)="setRoleFilter('Colaborador')">
                 Colaborador <span class="pill-count">{{ countCollaborator() }}</span>
               </button>
-              <button type="button" class="pill pill--speaker" [class.pill--active]="roleFilter() === 'Palestrante'" (click)="setRoleFilter('Palestrante')">
+              <button type="button" class="pill pill--speaker" [class.pill--active]="roleFilter() === 'Palestrante'"
+                      (click)="setRoleFilter('Palestrante')">
                 Palestrante <span class="pill-count">{{ countSpeaker() }}</span>
               </button>
-              <button type="button" class="pill pill--participant" [class.pill--active]="roleFilter() === 'Participante'" (click)="setRoleFilter('Participante')">
+              <button type="button" class="pill pill--participant"
+                      [class.pill--active]="roleFilter() === 'Participante'" (click)="setRoleFilter('Participante')">
                 Participante <span class="pill-count">{{ countParticipant() }}</span>
               </button>
             </div>
@@ -219,7 +228,8 @@
 
                     @if (!row.already_released) {
                       @if (isCancelling(row)) {
-                        <span class="material-symbols-outlined icon-fadeInOut icon-spinClockwise shrink-0" aria-hidden="true">progress_activity</span>
+                        <span class="material-symbols-outlined icon-fadeInOut icon-spinClockwise shrink-0"
+                              aria-hidden="true">progress_activity</span>
                       } @else {
                         <button
                           mat-icon-button
@@ -254,7 +264,8 @@
               }
             </div>
           } @else {
-            <div class="text-default rounded-2xl border border-dashed border-slate-300 p-6 text-center dark:border-slate-700">
+            <div
+              class="text-default rounded-2xl border border-dashed border-slate-300 p-6 text-center dark:border-slate-700">
               Nenhum registro encontrado.
             </div>
           }

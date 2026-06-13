@@ -1,11 +1,4 @@
-import {
-  AfterViewInit,
-  Component,
-  computed,
-  inject,
-  signal,
-  ViewChild,
-} from '@angular/core';
+import { AfterViewInit, Component, computed, inject, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
@@ -27,10 +20,7 @@ import {
   CertificatePreviewItem,
   CertificatesService,
 } from '../../../services/certificates/certificates-service';
-import {
-  AttendanceService,
-  AttendanceKind,
-} from '../../../services/attendance/attendance-service';
+import { AttendanceKind, AttendanceService } from '../../../services/attendance/attendance-service';
 import {
   ConfirmReleaseDialog,
   ConfirmReleaseDialogData,
@@ -130,12 +120,18 @@ export class CertificateReview implements AfterViewInit {
     // Custom sort accessor for nested/mapped fields
     this.dataSource.sortingDataAccessor = (item: CertificatePreviewItem, header: string) => {
       switch (header) {
-        case 'name':         return item.name?.toLowerCase() ?? '';
-        case 'email':        return item.email?.toLowerCase() ?? '';
-        case 'federalCode':  return item.federal_code?.toLowerCase() ?? '';
-        case 'role':         return item.role?.toLowerCase() ?? '';
-        case 'status':       return item.already_released ? 'z' : 'a';
-        default:             return '';
+        case 'name':
+          return item.name?.toLowerCase() ?? '';
+        case 'email':
+          return item.email?.toLowerCase() ?? '';
+        case 'federalCode':
+          return item.federal_code?.toLowerCase() ?? '';
+        case 'role':
+          return item.role?.toLowerCase() ?? '';
+        case 'status':
+          return item.already_released ? 'z' : 'a';
+        default:
+          return '';
       }
     };
 
@@ -228,17 +224,14 @@ export class CertificateReview implements AfterViewInit {
       .pipe(finalize(() => this.setCancelling(key, false)))
       .subscribe({
         next: () => {
-          this.allItems.update((current) =>
-            current.filter((i) => this.itemKey(i) !== key),
-          );
+          this.allItems.update((current) => current.filter((i) => this.itemKey(i) !== key));
           this.applyTableFilter();
           this.snackBar.open('Presença cancelada. Registro removido da lista.', 'Fechar', {
             duration: 2500,
           });
         },
         error: (err) => {
-          const message =
-            err?.error?.message || err?.error?.error || 'Erro ao cancelar presença.';
+          const message = err?.error?.message || err?.error?.error || 'Erro ao cancelar presença.';
           this.snackBar.open(message, 'Fechar', { duration: 5000 });
         },
       });
@@ -302,11 +295,16 @@ export class CertificateReview implements AfterViewInit {
 
   private roleToKind(role: string): AttendanceKind | null {
     switch (role) {
-      case 'Participante': return 'participant';
-      case 'Colaborador':  return 'collaborator';
-      case 'Organizador':  return 'organizer';
-      case 'Palestrante':  return 'speaker_talk';
-      default:             return null;
+      case 'Participante':
+        return 'participant';
+      case 'Colaborador':
+        return 'collaborator';
+      case 'Organizador':
+        return 'organizer';
+      case 'Palestrante':
+        return 'speaker_talk';
+      default:
+        return null;
     }
   }
 }

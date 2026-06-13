@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { finalize } from 'rxjs';
 
@@ -46,6 +46,9 @@ export class CertificateSend {
   public readonly loading = signal(false);
   public readonly sending = signal(false);
 
+  /** cert_code of the item currently being sent individually (null = none) */
+  public readonly sendingCode = signal<string | null>(null);
+
   /** Items with code != null, sent_at == null (fetched via preview, filtered client-side) */
   public readonly items = signal<SendableItem[]>([]);
 
@@ -68,9 +71,7 @@ export class CertificateSend {
   );
 
   /** Items sent successfully this session */
-  public readonly sentItems = computed(() =>
-    this.items().filter((i) => i.sendStatus === true),
-  );
+  public readonly sentItems = computed(() => this.items().filter((i) => i.sendStatus === true));
 
   constructor() {
     this.loadPending();
@@ -160,9 +161,7 @@ export class CertificateSend {
       },
       error: (err) => {
         const message =
-          err?.error?.error ||
-          err?.error?.message ||
-          'Erro desconhecido ao enviar certificado.';
+          err?.error?.error || err?.error?.message || 'Erro desconhecido ao enviar certificado.';
 
         this.failedCount.update((n) => n + 1);
         this.sending.set(false);
@@ -187,15 +186,43 @@ export class CertificateSend {
     this.items.update((all) => {
       const idx = all.findIndex(
         (i) =>
-          i.cert_code === item.cert_code &&
-          i.person_id === item.person_id &&
-          i.role === item.role,
+          i.cert_code === item.cert_code && i.person_id === item.person_id && i.role === item.role,
       );
       if (idx === -1) return all;
       const copy = [...all];
       const [removed] = copy.splice(idx, 1);
       copy.push(removed);
       return copy;
+    });
+  }
+
+  /** Send a single item individually (e.g. for testing) */
+  public sendSingle(item: SendableItem): void {
+    if (!item.cert_code || this.sending() || this.sendingCode() !== null) {
+      return;
+    }
+
+    this.sendingCode.set(item.cert_code);
+    this.sendError.set(null);
+
+    this.certificatesService.sendMail(item.cert_code).subscribe({
+      next: () => {
+        this.markItemStatus(item, true);
+        this.moveToEnd(item);
+        this.sentCount.update((n) => n + 1);
+        this.sendingCode.set(null);
+
+        this.snackBar.open(`Certificado enviado para ${item.email}`, 'Fechar', { duration: 4000 });
+      },
+      error: (err) => {
+        const message =
+          err?.error?.error || err?.error?.message || 'Erro desconhecido ao enviar certificado.';
+
+        this.sendingCode.set(null);
+        this.sendError.set(message);
+
+        this.snackBar.open(`Falha ao enviar: ${message}`, 'Fechar', { duration: 8000 });
+      },
     });
   }
 

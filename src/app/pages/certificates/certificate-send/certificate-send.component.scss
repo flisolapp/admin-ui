@@ -7,14 +7,17 @@
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .send-item {
   transform-origin: top center;
-  transition:
-    opacity 0.4s ease,
-    border-color 0.3s ease,
-    background-color 0.3s ease;
+  transition: opacity 0.4s ease,
+  border-color 0.3s ease,
+  background-color 0.3s ease;
 }
