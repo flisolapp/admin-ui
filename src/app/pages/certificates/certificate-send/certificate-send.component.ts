@@ -21,6 +21,15 @@ export interface SendableItem extends CertificatePreviewItem {
   sendStatus?: boolean;
 }
 
+/** Structured error captured when sending stops */
+export interface SendError {
+  message: string;
+  details: string | null;
+}
+
+// MailerSend free tier: 10 requests/min → wait 6 s between requests (safe margin)
+const SEND_DELAY_MS = 6_000;
+
 @Component({
   selector: 'app-send',
   standalone: true,
@@ -57,8 +66,8 @@ export class CertificateSend {
   public readonly failedCount = signal(0);
   public readonly currentIndex = signal(0);
 
-  /** Error message shown when sending stops */
-  public readonly sendError = signal<string | null>(null);
+  /** Structured error shown when sending stops */
+  public readonly sendError = signal<SendError | null>(null);
 
   /** True when sending finished with no errors */
   public readonly allSentSuccessfully = signal(false);
@@ -124,10 +133,10 @@ export class CertificateSend {
     this.sentCount.set(0);
     this.failedCount.set(0);
 
-    this.processnext();
+    this.processNext();
   }
 
-  private processnext(): void {
+  private processNext(): void {
     // Find first item with no sendStatus (pending)
     const allItems = this.items();
     const nextIndex = allItems.findIndex((i) => i.sendStatus === undefined);
@@ -145,7 +154,7 @@ export class CertificateSend {
     if (!item.cert_code) {
       // Skip items without a code (should not happen given the filter, but guard anyway)
       this.markItemStatus(item, true);
-      this.processnext();
+      this.processNext();
       return;
     }
 
@@ -156,16 +165,17 @@ export class CertificateSend {
         this.moveToEnd(item);
         this.sentCount.update((n) => n + 1);
 
-        // Wait 2s between requests to respect server rate limit (120 req/min)
-        setTimeout(() => this.processnext(), 2000);
+        // Respect MailerSend rate limit (10 req/min → 6 s between requests)
+        setTimeout(() => this.processNext(), SEND_DELAY_MS);
       },
       error: (err) => {
-        const message =
+        const message: string =
           err?.error?.error || err?.error?.message || 'Erro desconhecido ao enviar certificado.';
+        const details: string | null = err?.error?.details ?? null;
 
         this.failedCount.update((n) => n + 1);
         this.sending.set(false);
-        this.sendError.set(message);
+        this.sendError.set({ message, details });
 
         this.snackBar.open(`Envio interrompido: ${message}`, 'Fechar', { duration: 8000 });
       },
@@ -215,11 +225,12 @@ export class CertificateSend {
         this.snackBar.open(`Certificado enviado para ${item.email}`, 'Fechar', { duration: 4000 });
       },
       error: (err) => {
-        const message =
+        const message: string =
           err?.error?.error || err?.error?.message || 'Erro desconhecido ao enviar certificado.';
+        const details: string | null = err?.error?.details ?? null;
 
         this.sendingCode.set(null);
-        this.sendError.set(message);
+        this.sendError.set({ message, details });
 
         this.snackBar.open(`Falha ao enviar: ${message}`, 'Fechar', { duration: 8000 });
       },

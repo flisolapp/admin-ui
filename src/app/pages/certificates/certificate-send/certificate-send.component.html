@@ -67,9 +67,12 @@
           class="rounded-lg border border-red-300 bg-red-50 dark:border-red-800 dark:bg-red-950 p-4 text-sm text-red-800 dark:text-red-200">
           <div class="flex items-start gap-3">
             <mat-icon class="!text-[20px] !w-[20px] !h-[20px] mt-0.5 shrink-0">error_outline</mat-icon>
-            <div>
+            <div class="min-w-0 flex-1">
               <p class="font-semibold mb-1">Processamento interrompido</p>
-              <p>Motivo: {{ sendError() }}</p>
+              <p>Motivo: {{ sendError()!.message }}</p>
+              @if (sendError()!.details) {
+                <p class="mt-1 font-mono text-xs break-all opacity-80">{{ sendError()!.details }}</p>
+              }
               <p class="mt-2 text-xs opacity-75">
                 Os itens já enviados foram marcados com sucesso. Corrija o problema e reinicie o envio.
               </p>
@@ -113,7 +116,7 @@
           <p class="text-lg font-medium">Nenhum certificado pendente de envio</p>
           <p class="text-sm text-center max-w-sm">
             Todos os certificados liberados já foram enviados, ou ainda não há certificados liberados.
-            Acesse <strong>Certificados > Revisão</strong> para liberar os certificados primeiro.
+            Acesse <strong>Certificados &gt; Revisão</strong> para liberar os certificados primeiro.
           </p>
         </div>
       }
