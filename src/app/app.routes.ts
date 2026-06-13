@@ -12,6 +12,8 @@ import { Organizers } from './pages/registrations/organizers/organizers';
 import { Users } from './pages/registrations/users/users';
 import { Attendance } from './pages/attendance/attendance';
 import { Profile } from './pages/profile/profile';
+import { CertificateReview } from './pages/certificates/certificate-review/certificate-review.component';
+import { CertificateSend } from './pages/certificates/certificate-send/certificate-send.component';
 
 import { guestGuard } from './guards/guest/guest-guard';
 import { authGuard } from './guards/auth/auth-guard';
@@ -54,6 +56,14 @@ export const routes: Routes = [
         ],
       },
       { path: 'attendance', component: Attendance },
+      {
+        path: 'certificates',
+        children: [
+          { path: '', redirectTo: 'review', pathMatch: 'full' },
+          { path: 'review', component: CertificateReview },
+          { path: 'send', component: CertificateSend },
+        ],
+      },
       { path: 'profile', component: Profile },
     ],
   },

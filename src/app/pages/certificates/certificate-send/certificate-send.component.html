@@ -1,0 +1,200 @@
+<app-page-structure>
+  <div class="min-h-screen px-4 py-6 md:py-12">
+    <div class="mx-auto flex w-full max-w-[960px] flex-col gap-6">
+
+      <!-- Header -->
+      <div class="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1 class="text-default mb-1 inline-flex items-center text-3xl font-black md:text-4xl">
+            Enviar certificados
+          </h1>
+          <p class="text-sm text-muted-foreground">
+            Certificados liberados e pendentes de envio
+          </p>
+        </div>
+
+        <div class="flex items-center gap-2 flex-wrap">
+          <button
+            mat-icon-button
+            matTooltip="Atualizar lista"
+            type="button"
+            (click)="loadPending()"
+            [disabled]="loading() || sending()"
+          >
+            <mat-icon>refresh</mat-icon>
+          </button>
+
+          <button
+            mat-flat-button
+            color="primary"
+            type="button"
+            (click)="startSending()"
+            [disabled]="loading() || sending() || pendingItems().length === 0"
+          >
+            @if (sending()) { Enviando... } @else { Iniciar envio }
+          </button>
+        </div>
+      </div>
+
+      <!-- Progress bar -->
+      @if (loading() || sending()) {
+        <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+      }
+
+      <!-- Progress stats while sending -->
+      @if (sending()) {
+        <div class="rounded-lg border border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950 p-4 text-sm text-blue-800 dark:text-blue-200">
+          <div class="flex items-center gap-3 mb-2">
+            <mat-icon class="!text-[20px] !w-[20px] !h-[20px] spin-icon">refresh</mat-icon>
+            <span class="font-semibold">Processando...</span>
+          </div>
+          <div class="flex flex-wrap gap-4 text-sm">
+            <span>Enviando <strong>{{ currentIndex() }}</strong> de <strong>{{ total() }}</strong></span>
+            <span class="text-green-700 dark:text-green-400">Sucessos: <strong>{{ sentCount() }}</strong></span>
+            <span class="text-red-600 dark:text-red-400">Falhas: <strong>{{ failedCount() }}</strong></span>
+          </div>
+        </div>
+      }
+
+      <!-- Error banner -->
+      @if (sendError()) {
+        <div class="rounded-lg border border-red-300 bg-red-50 dark:border-red-800 dark:bg-red-950 p-4 text-sm text-red-800 dark:text-red-200">
+          <div class="flex items-start gap-3">
+            <mat-icon class="!text-[20px] !w-[20px] !h-[20px] mt-0.5 shrink-0">error_outline</mat-icon>
+            <div>
+              <p class="font-semibold mb-1">Processamento interrompido</p>
+              <p>Motivo: {{ sendError() }}</p>
+              <p class="mt-2 text-xs opacity-75">
+                Os itens já enviados foram marcados com sucesso. Corrija o problema e reinicie o envio.
+              </p>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- All sent successfully -->
+      @if (allSentSuccessfully() && !sending()) {
+        <div class="rounded-lg border border-green-300 bg-green-50 dark:border-green-800 dark:bg-green-950 p-4 text-sm text-green-800 dark:text-green-200 flex items-center gap-3">
+          <mat-icon class="!text-[20px] !w-[20px] !h-[20px]">check_circle</mat-icon>
+          <span class="font-semibold">Todos os certificados pendentes foram enviados com sucesso.</span>
+        </div>
+      }
+
+      <!-- Summary chips when not loading -->
+      @if (!loading() && total() > 0) {
+        <div class="flex flex-wrap gap-4 text-sm">
+          <span class="text-muted-foreground">
+            <strong>{{ total() }}</strong> total
+          </span>
+          @if (pendingItems().length > 0) {
+            <span class="text-orange-500 dark:text-orange-400">
+              <strong>{{ pendingItems().length }}</strong> pendentes
+            </span>
+          }
+          @if (sentItems().length > 0) {
+            <span class="text-green-600 dark:text-green-400">
+              <strong>{{ sentItems().length }}</strong> enviados nesta sessão
+            </span>
+          }
+        </div>
+      }
+
+      <!-- Empty state -->
+      @if (!loading() && total() === 0) {
+        <div class="flex flex-col items-center justify-center py-16 gap-4 text-muted-foreground">
+          <mat-icon class="!text-[64px] !w-[64px] !h-[64px] opacity-30">mark_email_read</mat-icon>
+          <p class="text-lg font-medium">Nenhum certificado pendente de envio</p>
+          <p class="text-sm text-center max-w-sm">
+            Todos os certificados liberados já foram enviados, ou ainda não há certificados liberados.
+            Acesse <strong>Certificados > Revisão</strong> para liberar os certificados primeiro.
+          </p>
+        </div>
+      }
+
+      <!-- Certificate list -->
+      @if (!loading() && total() > 0) {
+        <div class="flex flex-col gap-3">
+          @for (item of items(); track trackByItem($index, item)) {
+            <div
+              class="send-item rounded-lg border p-4 flex flex-col sm:flex-row sm:items-center gap-3 transition-all duration-500"
+              [class.border-green-300]="item.sendStatus === true"
+              [class.dark:border-green-700]="item.sendStatus === true"
+              [class.bg-green-50]="item.sendStatus === true"
+              [class.dark:bg-green-950]="item.sendStatus === true"
+              [class.opacity-60]="item.sendStatus === true"
+              [class.border-neutral-200]="item.sendStatus === undefined"
+              [class.dark:border-neutral-700]="item.sendStatus === undefined"
+              [class.bg-white]="item.sendStatus === undefined && !themeService.darkMode()"
+              [class.dark:bg-neutral-900]="item.sendStatus === undefined"
+            >
+              <!-- Status icon -->
+              <div class="shrink-0">
+                @if (item.sendStatus === true) {
+                  <mat-icon class="text-green-600 dark:text-green-400 !text-[22px] !w-[22px] !h-[22px]">
+                    mark_email_read
+                  </mat-icon>
+                } @else {
+                  <mat-icon class="text-muted-foreground !text-[22px] !w-[22px] !h-[22px]">
+                    mail_outline
+                  </mat-icon>
+                }
+              </div>
+
+              <!-- Info -->
+              <div class="flex-1 min-w-0">
+                <div class="flex flex-wrap items-center gap-2 mb-1">
+                  <span class="font-semibold text-sm truncate">{{ item.name }}</span>
+
+                  <!-- Role badge -->
+                  <span
+                    class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border"
+                    [class.bg-purple-100]="item.role === 'Organizador'"
+                    [class.text-purple-800]="item.role === 'Organizador'"
+                    [class.border-purple-200]="item.role === 'Organizador'"
+                    [class.dark:bg-purple-900]="item.role === 'Organizador'"
+                    [class.dark:text-purple-200]="item.role === 'Organizador'"
+                    [class.bg-blue-100]="item.role === 'Colaborador'"
+                    [class.text-blue-800]="item.role === 'Colaborador'"
+                    [class.border-blue-200]="item.role === 'Colaborador'"
+                    [class.dark:bg-blue-900]="item.role === 'Colaborador'"
+                    [class.dark:text-blue-200]="item.role === 'Colaborador'"
+                    [class.bg-orange-100]="item.role === 'Palestrante'"
+                    [class.text-orange-800]="item.role === 'Palestrante'"
+                    [class.border-orange-200]="item.role === 'Palestrante'"
+                    [class.dark:bg-orange-900]="item.role === 'Palestrante'"
+                    [class.dark:text-orange-200]="item.role === 'Palestrante'"
+                    [class.bg-neutral-100]="item.role === 'Participante'"
+                    [class.text-neutral-700]="item.role === 'Participante'"
+                    [class.border-neutral-200]="item.role === 'Participante'"
+                    [class.dark:bg-neutral-800]="item.role === 'Participante'"
+                    [class.dark:text-neutral-300]="item.role === 'Participante'"
+                  >
+                    {{ item.role }}
+                  </span>
+
+                  @if (item.sendStatus === true) {
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200 dark:bg-green-900 dark:text-green-200">
+                      <mat-icon class="!text-[12px] !w-[12px] !h-[12px]">check</mat-icon>
+                      Enviado
+                    </span>
+                  }
+                </div>
+
+                <div class="text-xs text-muted-foreground space-y-0.5">
+                  <div>{{ item.email }}</div>
+                  @if (item.cert_code) {
+                    <div class="font-mono opacity-60">{{ item.cert_code }}</div>
+                  }
+                  @if (item.talk_title) {
+                    <div class="italic">{{ item.talk_title }}</div>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+    </div>
+  </div>
+</app-page-structure>

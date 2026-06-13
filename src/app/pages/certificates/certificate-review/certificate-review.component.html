@@ -1,0 +1,278 @@
+<app-page-structure>
+  <div class="min-h-screen px-4 py-6 md:py-12">
+    <div class="mx-auto flex w-full max-w-[960px] flex-col gap-6">
+
+      <!-- Header -->
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <h1 class="text-default mb-2 inline-flex items-center text-3xl font-black md:text-4xl">
+            Revisar certificados
+          </h1>
+          <!--
+          @if (editionYear()) {
+            <p class="text-default text-sm">Edição {{ editionYear() }}</p>
+          }
+          -->
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button
+            mat-icon-button
+            matTooltip="Atualizar"
+            type="button"
+            (click)="loadPreview()"
+            [disabled]="loading() || releasing()"
+          >
+            <mat-icon>refresh</mat-icon>
+          </button>
+
+          <button
+            mat-flat-button
+            color="primary"
+            type="button"
+            (click)="openReleaseDialog()"
+            [disabled]="loading() || releasing() || total() === 0"
+          >
+            @if (releasing()) { Liberando... } @else { Liberar certificados }
+          </button>
+        </div>
+      </div>
+
+      <!-- Table card — same pattern as Credenciamento -->
+      <div
+        class="overflow-hidden"
+        [class.bg-neutral-900]="themeService.darkMode()"
+        [class.bg-white]="!themeService.darkMode()"
+      >
+        <!-- Search -->
+        <div class="p-4">
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Buscar nos certificados</mat-label>
+            <input
+              matInput
+              [value]="search()"
+              (input)="applySearch($event)"
+              placeholder="Nome, e-mail, CPF, palestra..."
+            />
+            @if (search()) {
+              <button
+                mat-icon-button
+                matSuffix
+                type="button"
+                aria-label="Limpar busca"
+                (click)="clearSearch()"
+                class="mr-2"
+              >
+                <mat-icon>close</mat-icon>
+              </button>
+            } @else {
+              <mat-icon matSuffix class="mr-1">search</mat-icon>
+            }
+          </mat-form-field>
+
+          <!-- Pills + count on the same row below the search -->
+          <div class="flex flex-wrap items-center gap-2 mt-2">
+            <div class="flex flex-wrap gap-2 flex-1">
+              <button type="button" class="pill" [class.pill--active]="roleFilter() === 'Todos'" (click)="setRoleFilter('Todos')">
+                Todos <span class="pill-count">{{ total() }}</span>
+              </button>
+              <button type="button" class="pill pill--organizer" [class.pill--active]="roleFilter() === 'Organizador'" (click)="setRoleFilter('Organizador')">
+                Organizador <span class="pill-count">{{ countOrganizer() }}</span>
+              </button>
+              <button type="button" class="pill pill--collaborator" [class.pill--active]="roleFilter() === 'Colaborador'" (click)="setRoleFilter('Colaborador')">
+                Colaborador <span class="pill-count">{{ countCollaborator() }}</span>
+              </button>
+              <button type="button" class="pill pill--speaker" [class.pill--active]="roleFilter() === 'Palestrante'" (click)="setRoleFilter('Palestrante')">
+                Palestrante <span class="pill-count">{{ countSpeaker() }}</span>
+              </button>
+              <button type="button" class="pill pill--participant" [class.pill--active]="roleFilter() === 'Participante'" (click)="setRoleFilter('Participante')">
+                Participante <span class="pill-count">{{ countParticipant() }}</span>
+              </button>
+            </div>
+
+            <span class="text-default text-sm shrink-0 opacity-70">
+              {{ filteredTotal() }} de {{ total() }} registros
+            </span>
+          </div>
+        </div>
+
+        <!-- Progress bar -->
+        @if (loading() || releasing()) {
+          <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        }
+
+        <!-- Releasing message -->
+        <!--
+        @if (releasing()) {
+          <div class="mx-4 mb-4 rounded-lg border border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950 p-4 text-sm text-blue-800 dark:text-blue-200 flex items-center gap-3">
+            <mat-icon class="!text-[20px] !w-[20px] !h-[20px]">hourglass_top</mat-icon>
+            <span>Liberando certificados... Aguarde, isso pode levar alguns segundos.</span>
+          </div>
+        }
+        -->
+
+        <!-- Desktop table -->
+        <div class="hidden overflow-x-auto md:block">
+          <table
+            mat-table
+            [dataSource]="dataSource"
+            matSort
+            matSortDisableClear
+            [matSortActive]="sortBy()"
+            [matSortDirection]="sortDirection() || 'asc'"
+            class="striped-table w-full"
+          >
+            <!-- Name -->
+            <ng-container matColumnDef="name">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-default">Nome</th>
+              <td mat-cell *matCellDef="let row" class="text-default">
+                <div class="font-medium">{{ row.name || '—' }}</div>
+                @if (row.talk_title) {
+                  <div class="text-xs opacity-60 italic">{{ row.talk_title }}</div>
+                }
+              </td>
+            </ng-container>
+
+            <!-- Email -->
+            <ng-container matColumnDef="email">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-default">E-mail</th>
+              <td mat-cell *matCellDef="let row" class="text-default">{{ row.email || '—' }}</td>
+            </ng-container>
+
+            <!-- CPF -->
+            <ng-container matColumnDef="federalCode">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header="federalCode" class="text-default">CPF</th>
+              <td mat-cell *matCellDef="let row" class="text-default">{{ row.federal_code || '—' }}</td>
+            </ng-container>
+
+            <!-- Role -->
+            <ng-container matColumnDef="role">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-default">Papel</th>
+              <td mat-cell *matCellDef="let row">
+                <span class="role-chip" [attr.data-role]="row.role">{{ row.role }}</span>
+              </td>
+            </ng-container>
+
+            <!-- Status -->
+            <ng-container matColumnDef="status">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-default">Status</th>
+              <td mat-cell *matCellDef="let row">
+                @if (row.already_released) {
+                  <span class="status-chip status-chip--released">
+                    <mat-icon class="!text-[12px] !w-[12px] !h-[12px]">check_circle</mat-icon>
+                    Liberado
+                  </span>
+                } @else {
+                  <span class="status-chip status-chip--pending">Pendente</span>
+                }
+              </td>
+            </ng-container>
+
+            <!-- Actions -->
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef class="text-default">Ações</th>
+              <td mat-cell *matCellDef="let row" class="whitespace-nowrap">
+                @if (!row.already_released) {
+                  @if (isCancelling(row)) {
+                    <span class="material-symbols-outlined icon-fadeInOut icon-spinClockwise" aria-hidden="true">progress_activity</span>
+                  } @else {
+                    <button
+                      mat-icon-button
+                      type="button"
+                      matTooltip="Cancelar presença (remove da lista)"
+                      color="warn"
+                      (click)="cancel(row)"
+                      [disabled]="releasing()"
+                    >
+                      <mat-icon>person_remove</mat-icon>
+                    </button>
+                  }
+                }
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+            <tr class="mat-mdc-row" *matNoDataRow>
+              <td
+                class="mat-mdc-cell text-default p-4 text-center"
+                [attr.colspan]="displayedColumns.length"
+              >
+                Nenhum registro encontrado.
+              </td>
+            </tr>
+          </table>
+        </div>
+
+        <!-- Mobile cards -->
+        <div class="block p-4 md:hidden">
+          @if (dataSource.data.length) {
+            <div class="flex flex-col gap-4">
+              @for (row of dataSource.data; track trackByItem($index, row)) {
+                <article class="rounded-xl border border-slate-200/70 p-4 dark:border-slate-700/70">
+                  <div class="mb-3 flex items-start justify-between gap-3">
+                    <div class="min-w-0">
+                      <div class="text-default truncate text-base font-bold">{{ row.name || '—' }}</div>
+                      <div class="mt-1 text-xs opacity-60">{{ row.email || '—' }}</div>
+                    </div>
+
+                    @if (!row.already_released) {
+                      @if (isCancelling(row)) {
+                        <span class="material-symbols-outlined icon-fadeInOut icon-spinClockwise shrink-0" aria-hidden="true">progress_activity</span>
+                      } @else {
+                        <button
+                          mat-icon-button
+                          type="button"
+                          color="warn"
+                          matTooltip="Cancelar presença"
+                          (click)="cancel(row)"
+                          [disabled]="releasing()"
+                        >
+                          <mat-icon>person_remove</mat-icon>
+                        </button>
+                      }
+                    }
+                  </div>
+
+                  <div class="flex flex-wrap items-center gap-2">
+                    <span class="role-chip" [attr.data-role]="row.role">{{ row.role }}</span>
+                    @if (row.already_released) {
+                      <span class="status-chip status-chip--released">
+                        <mat-icon class="!text-[12px] !w-[12px] !h-[12px]">check_circle</mat-icon>
+                        Liberado
+                      </span>
+                    } @else {
+                      <span class="status-chip status-chip--pending">Pendente</span>
+                    }
+                  </div>
+
+                  @if (row.talk_title) {
+                    <div class="mt-2 text-xs opacity-60 italic">{{ row.talk_title }}</div>
+                  }
+                </article>
+              }
+            </div>
+          } @else {
+            <div class="text-default rounded-2xl border border-dashed border-slate-300 p-6 text-center dark:border-slate-700">
+              Nenhum registro encontrado.
+            </div>
+          }
+        </div>
+
+      </div><!-- end card -->
+
+      <!-- Empty state (no items at all) -->
+      @if (!loading() && total() === 0) {
+        <div class="flex flex-col items-center justify-center py-16 gap-4 text-muted-foreground">
+          <mat-icon class="!text-[64px] !w-[64px] !h-[64px] opacity-30">workspace_premium</mat-icon>
+          <p class="text-lg font-medium">Nenhum candidato encontrado</p>
+          <p class="text-sm text-center max-w-sm">
+            Não há registros elegíveis para certificado neste momento.
+          </p>
+        </div>
+      }
+
+    </div>
+  </div>
+</app-page-structure>

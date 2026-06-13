@@ -1,0 +1,22 @@
+<h1 mat-dialog-title>Liberar certificados</h1>
+
+<div mat-dialog-content>
+  <p class="text-sm text-muted-foreground mb-2">
+    Você está prestes a liberar os certificados para
+    <strong>{{ data.total }} candidato(s)</strong> listados na tela de revisão.
+  </p>
+  <p class="text-sm text-muted-foreground">
+    Esta operação criará os registros de certificados para todos os elegíveis que ainda não possuem um.
+    Após a liberação, os certificados ficam disponíveis para envio.
+  </p>
+</div>
+
+<div mat-dialog-actions align="end">
+  <button mat-button (click)="cancel()" cdkFocusInitial>
+    Cancelar
+  </button>
+
+  <button mat-flat-button color="primary" (click)="confirm()">
+    Liberar certificados
+  </button>
+</div>

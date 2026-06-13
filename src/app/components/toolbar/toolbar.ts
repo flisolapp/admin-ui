@@ -41,6 +41,12 @@ export class Toolbar {
     { label: 'Organizadores', route: '/registrations/organizers' },
     { label: 'Usuários', route: '/registrations/users' },
   ];
+  public certificatesItems = [
+    // { label: 'Modelos', route: '/certificates/models' },
+    { label: 'Revisão', route: '/certificates/review' }, // Uses Preview & Release
+    { label: 'Envio', route: '/certificates/send' },
+    // { label: 'Histórico', route: '/certificates/history' },
+  ];
 
   constructor(
     public readonly themeService: ThemeService,
