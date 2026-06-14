@@ -13,6 +13,7 @@ import { PageStructure } from '../../../components/page-structure/page-structure
 import { ThemeService } from '../../../services/theme/theme-service';
 import {
   CertificatePreviewItem,
+  CertificateSendResponse,
   CertificatesService,
 } from '../../../services/certificates/certificates-service';
 
@@ -159,11 +160,15 @@ export class CertificateSend {
     }
 
     this.certificatesService.sendMail(item.cert_code).subscribe({
-      next: () => {
-        // Mark sent, move to end of list visually
-        this.markItemStatus(item, true);
-        this.moveToEnd(item);
-        this.sentCount.update((n) => n + 1);
+      next: (response) => {
+        // The API returns the exact list of certificate codes it marked as sent.
+        // Cascade that set onto the local list so sibling certificates belonging
+        // to the same person are immediately marked and skipped by future
+        // processNext() calls — no email/person matching needed on the UI side.
+        const sentCodes = this.extractSentCodes(response);
+        const cascadeCount = this.cascadeMarkSent(sentCodes);
+
+        this.sentCount.update((n) => n + cascadeCount);
 
         // Respect MailerSend rate limit (10 req/min → 6 s between requests)
         setTimeout(() => this.processNext(), SEND_DELAY_MS);
@@ -182,6 +187,63 @@ export class CertificateSend {
     });
   }
 
+  /**
+   * Extract the set of certificate codes that the server confirmed as sent.
+   * Reads `response.certificates[].code` — the authoritative source of truth.
+   * Guards gracefully against unexpected response shapes.
+   */
+  private extractSentCodes(response: CertificateSendResponse): Set<string> {
+    const codes = new Set<string>();
+    if (Array.isArray(response?.certificates)) {
+      for (const cert of response.certificates) {
+        if (cert?.code) {
+          codes.add(cert.code);
+        }
+      }
+    }
+    return codes;
+  }
+
+  /**
+   * Mark every still-pending item whose `cert_code` appears in `sentCodes` as
+   * sent, then move all sent items to the end of the list in one reorder pass.
+   * Returns the number of items actually marked (used to update sentCount).
+   *
+   * Matching is done exclusively by certificate code — never by email or
+   * person_id — so only codes explicitly confirmed by the server are affected.
+   */
+  private cascadeMarkSent(sentCodes: Set<string>): number {
+    if (sentCodes.size === 0) {
+      return 0;
+    }
+
+    let count = 0;
+
+    // Pass 1: mark matching pending items as sent.
+    this.items.update((all) =>
+      all.map((i) => {
+        if (i.cert_code && sentCodes.has(i.cert_code) && i.sendStatus === undefined) {
+          count++;
+          return { ...i, sendStatus: true as const };
+        }
+        return i;
+      }),
+    );
+
+    // Pass 2: reorder — pending items first, sent items at the end.
+    // Done in a single pass to preserve relative order within each group.
+    this.items.update((all) => [
+      ...all.filter((i) => i.sendStatus !== true),
+      ...all.filter((i) => i.sendStatus === true),
+    ]);
+
+    return count;
+  }
+
+  /**
+   * Keep for the no-code guard path inside processNext (cert_code === null).
+   * All normal send paths go through cascadeMarkSent instead.
+   */
   private markItemStatus(item: SendableItem, success: boolean): void {
     this.items.update((all) =>
       all.map((i) =>
@@ -192,23 +254,16 @@ export class CertificateSend {
     );
   }
 
-  private moveToEnd(item: SendableItem): void {
-    this.items.update((all) => {
-      const idx = all.findIndex(
-        (i) =>
-          i.cert_code === item.cert_code && i.person_id === item.person_id && i.role === item.role,
-      );
-      if (idx === -1) return all;
-      const copy = [...all];
-      const [removed] = copy.splice(idx, 1);
-      copy.push(removed);
-      return copy;
-    });
-  }
-
-  /** Send a single item individually (e.g. for testing) */
+  /** Send a single item individually (e.g. retry or spot-check) */
   public sendSingle(item: SendableItem): void {
-    if (!item.cert_code || this.sending() || this.sendingCode() !== null) {
+    // Prevent sending if already marked sent, batch is running, or another
+    // individual send is in flight.
+    if (
+      !item.cert_code ||
+      item.sendStatus !== undefined ||
+      this.sending() ||
+      this.sendingCode() !== null
+    ) {
       return;
     }
 
@@ -216,13 +271,19 @@ export class CertificateSend {
     this.sendError.set(null);
 
     this.certificatesService.sendMail(item.cert_code).subscribe({
-      next: () => {
-        this.markItemStatus(item, true);
-        this.moveToEnd(item);
-        this.sentCount.update((n) => n + 1);
+      next: (response) => {
+        // Cascade by certificate code, same as the batch flow.
+        const sentCodes = this.extractSentCodes(response);
+        const cascadeCount = this.cascadeMarkSent(sentCodes);
+
+        this.sentCount.update((n) => n + cascadeCount);
         this.sendingCode.set(null);
 
-        this.snackBar.open(`Certificado enviado para ${item.email}`, 'Fechar', { duration: 4000 });
+        const siblingsNote =
+          cascadeCount > 1 ? ` (${cascadeCount} certificados marcados como enviados)` : '';
+        this.snackBar.open(`Certificado enviado para ${item.email}${siblingsNote}`, 'Fechar', {
+          duration: 4000,
+        });
       },
       error: (err) => {
         const message: string =
